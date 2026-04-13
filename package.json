@@ -1,8 +1,8 @@
 {
   "name": "com.teste.www",
-  "displayName": "Teste 01",
+  "displayName": "Propriedade Inteligente",
   "version": "1.0.0",
-  "description": "A sample Apache Cordova application that responds to the deviceready event.",
+  "description":"Aplicativo Mobile de Controle de Rebanho.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
