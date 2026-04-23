@@ -1,0 +1,57 @@
+/* Reset básico para mobile */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* Remove flash azul no touch */
+}
+
+:root {
+  /* Cores */
+  --color-primary: #863bff;
+  --color-primary-dark: #6a1fd4;
+  --color-background: #0f0f13;
+  --color-surface: #1a1a24;
+  --color-text: #f0ecff;
+  --color-text-muted: #9b92b8;
+  --color-error: #ff4d4f;
+  --color-border: #2e2a42;
+
+  /* Tipografia */
+  --font-family: 'Inter', system-ui, sans-serif;
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-md: 1rem;       /* 16px */
+  --font-size-lg: 1.25rem;    /* 20px */
+  --font-size-xl: 1.5rem;     /* 24px */
+
+  /* Espaçamento */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Bordas */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-full: 9999px;
+
+  /* Sombras */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+
+  /* Transições */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  min-height: 100vh;
+
+  /* Melhora a renderização de texto em mobile */
+  -webkit-font-smoothing: antialiased;
+}
