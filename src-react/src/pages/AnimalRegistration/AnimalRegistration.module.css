@@ -1,0 +1,251 @@
+.container {
+  min-height: 100vh;
+  padding: var(--space-lg);
+  background-color: var(--color-background);
+}
+
+.inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ─── Top bar ─── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.backBtn {
+  background: none;
+  border: 1.5px solid #2e2a42;
+  border-radius: var(--radius-full);
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #1a241a;
+  font-size: 18px;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.backBtn:hover {
+  border-color: #5b1d1d;
+  background-color: rgba(91, 29, 29, 0.06);
+}
+
+.pageTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: #1a241a;
+}
+
+.pageSubtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ─── Formulário ─── */
+.formCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-lg);
+}
+
+.formTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  margin-bottom: var(--space-lg);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.formGridFull {
+  grid-column: 1 / -1;
+}
+
+/* Campos sobrescrevem o Input global para ficar dentro do card escuro */
+.formGrid :global(.wrapper) {
+  gap: 4px;
+}
+
+.formGrid :global(.label) {
+  color: #9b92b8;
+}
+
+.formGrid :global(.input) {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f0ecff;
+}
+
+.formGrid :global(.input:focus) {
+  border-color: #5b1d1d;
+}
+
+.formGrid :global(.input::placeholder) {
+  color: rgba(155, 146, 184, 0.5);
+}
+
+.formGrid :global(.input.hasError) {
+  border-color: var(--color-error);
+}
+
+/* Select estilizado igual ao Input */
+.selectWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.selectLabel {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+  font-weight: 500;
+}
+
+.select {
+  width: 100%;
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  color: #f0ecff;
+  font-size: var(--font-size-md);
+  min-height: 48px;
+  transition: border-color var(--transition-fast);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239b92b8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.select:focus {
+  border-color: #5b1d1d;
+}
+
+.select option {
+  background-color: #1a241a;
+}
+
+.selectError {
+  border-color: var(--color-error);
+}
+
+.errorMsg {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+}
+
+.formActions {
+  margin-top: var(--space-lg);
+  display: flex;
+  gap: var(--space-md);
+}
+
+.formActions > * {
+  flex: 1;
+}
+
+.successToast {
+  background-color: rgba(30, 160, 90, 0.15);
+  border: 1px solid rgba(30, 160, 90, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #1ea05a;
+  text-align: center;
+  margin-top: var(--space-md);
+}
+
+/* ─── Lista de animais registrados ─── */
+.listSection {
+  margin-top: var(--space-xl);
+}
+
+.listTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-md);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-xl);
+  border: 1.5px dashed #2e2a42;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.animalList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.animalItem {
+  background-color: #f7f6f2;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  border: 1.5px solid #ebebeb;
+}
+
+.animalInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.animalName {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #1a241a;
+}
+
+.animalMeta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.animalTag {
+  background-color: rgba(91, 29, 29, 0.1);
+  color: #5b1d1d;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formGridFull {
+    grid-column: 1;
+  }
+}
