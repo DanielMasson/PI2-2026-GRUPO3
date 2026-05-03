@@ -3,18 +3,19 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: var(--space-md) var(--space-lg);
+  padding: 0 var(--space-lg);
   border: none;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill);
   font-size: var(--font-size-md);
   font-weight: 600;
+  font-family: var(--font-family);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   cursor: pointer;
+  min-height: 52px;
   transition: background-color var(--transition-fast),
               transform var(--transition-fast),
               opacity var(--transition-fast);
-
-  /* Importante para mobile: área de toque maior */
-  min-height: 48px;
 }
 
 .btn:active {
@@ -26,18 +27,23 @@
   cursor: not-allowed;
 }
 
-/* Variantes */
+/* Primário — verde sólido */
 .primary {
   background-color: var(--color-primary);
-  color: #fff;
+  color: #ffffff;
 }
 
 .primary:hover:not(:disabled) {
   background-color: var(--color-primary-dark);
 }
 
+/* Ghost — borda verde */
 .ghost {
   background-color: transparent;
   color: var(--color-primary);
-  border: 1.5px solid var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.ghost:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
 }
