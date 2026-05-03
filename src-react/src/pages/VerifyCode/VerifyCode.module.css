@@ -1,0 +1,64 @@
+.instruction {
+  text-align: center;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-primary);
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.codeRow {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  margin: var(--space-md) 0;
+}
+
+.codeBox {
+  width: 72px;
+  height: 80px;
+  background-color: var(--color-surface);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: var(--font-family);
+  color: var(--color-text);
+  text-align: center;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.codeBox:focus {
+  border-color: var(--color-primary);
+  background-color: #fff;
+}
+
+.verifyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 var(--space-lg);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  font-family: var(--font-family);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  min-height: 52px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.verifyBtn:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.verifyBtn:active {
+  transform: scale(0.97);
+}

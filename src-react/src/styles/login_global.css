@@ -1,0 +1,64 @@
+/* Reset básico para mobile */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Cores — baseadas no wireframe: fundo branco, verde do logo */
+  --color-primary:        #4e8a1a;
+  --color-primary-dark:   #3a6812;
+  --color-primary-light:  #e8f5d9;
+  --color-background:     #ffffff;
+  --color-surface:        #efefef;   /* inputs cinza claro */
+  --color-text:           #1c1c1e;
+  --color-text-muted:     #8e8e93;
+  --color-error:          #ff3b30;
+  --color-border:         #d8d8d8;
+  --color-dot:            #c8c8c8;   /* pontos do grid */
+
+  /* Tipografia */
+  --font-family:    'Poppins', system-ui, sans-serif;
+  --font-size-xs:   0.75rem;   /* 12px */
+  --font-size-sm:   0.875rem;  /* 14px */
+  --font-size-md:   1rem;      /* 16px */
+  --font-size-lg:   1.125rem;  /* 18px */
+  --font-size-xl:   1.5rem;    /* 24px */
+
+  /* Espaçamento */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+
+  /* Bordas */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-pill: 9999px;
+
+  /* Sombras */
+  --shadow-card: 0 2px 20px rgba(0, 0, 0, 0.08);
+
+  /* Transições */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}
+
+body {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}

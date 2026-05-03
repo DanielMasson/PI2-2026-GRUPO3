@@ -1,24 +1,26 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import styles from './Login.module.css'
+import styles from '../Login/Login.module.css'
 import Button from '../../components/Button/index.jsx'
 import Input from '../../components/Input/index.jsx'
 import logo from '../../assets/logo.png'
 
-function validateForm({ email, password }) {
+function validateRegister({ name, email, phone, password, confirm }) {
   const errors = {}
+  if (!name) errors.name = 'Nome é obrigatório'
   if (!email) errors.email = 'E-mail é obrigatório'
   else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'E-mail inválido'
-  if (!password) errors.password = 'Senha é obrigatória'
+  if (!phone) errors.phone = 'Telefone é obrigatório'
+  if (!password) errors.password = 'Crie uma senha'
   else if (password.length < 6) errors.password = 'Mínimo de 6 caracteres'
+  if (confirm !== password) errors.confirm = 'As senhas não coincidem'
   return errors
 }
 
-function LoginPage() {
+function RegisterPage() {
   const navigate = useNavigate()
-  const [fields, setFields] = useState({ email: '', password: '' })
+  const [fields, setFields] = useState({ name: '', email: '', phone: '', password: '', confirm: '' })
   const [errors, setErrors] = useState({})
-  const [formError, setFormError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   function handleChange(e) {
@@ -29,18 +31,13 @@ function LoginPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setFormError('')
-    const validationErrors = validateForm(fields)
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
-    }
+    const errs = validateRegister(fields)
+    if (Object.keys(errs).length) { setErrors(errs); return }
     setIsLoading(true)
     try {
       await new Promise(r => setTimeout(r, 1000))
-      navigate('/dashboard')
-    } catch {
-      setFormError('E-mail ou senha incorretos.')
+      // Futuramente: chamada API de cadastro
+      navigate('/login')
     } finally {
       setIsLoading(false)
     }
@@ -55,7 +52,16 @@ function LoginPage() {
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          {formError && <p className={styles.formError}>{formError}</p>}
+          <Input
+            id="name"
+            name="name"
+            type="text"
+            placeholder="Seu nome completo"
+            value={fields.name}
+            onChange={handleChange}
+            error={errors.name}
+            autoComplete="name"
+          />
 
           <Input
             id="email"
@@ -65,40 +71,55 @@ function LoginPage() {
             value={fields.email}
             onChange={handleChange}
             error={errors.email}
-            autoComplete="email"
             inputMode="email"
+            autoComplete="email"
+          />
+
+          <Input
+            id="phone"
+            name="phone"
+            type="tel"
+            placeholder="Insira seu telefone"
+            value={fields.phone}
+            onChange={handleChange}
+            error={errors.phone}
+            inputMode="tel"
+            autoComplete="tel"
           />
 
           <Input
             id="password"
             name="password"
             type="password"
-            placeholder="Insira sua senha"
+            placeholder="Crie uma senha"
             value={fields.password}
             onChange={handleChange}
             error={errors.password}
-            autoComplete="current-password"
+            autoComplete="new-password"
+          />
+
+          <Input
+            id="confirm"
+            name="confirm"
+            type="password"
+            placeholder="Confirme sua senha"
+            value={fields.confirm}
+            onChange={handleChange}
+            error={errors.confirm}
+            autoComplete="new-password"
           />
 
           <Button type="submit" isLoading={isLoading}>
-            Log-in
+            Criar Conta
           </Button>
-
-          <button
-            type="button"
-            className={styles.forgotPassword}
-            onClick={() => navigate('/esqueci-senha')}
-          >
-            Esqueceu a senha? Clique aqui
-          </button>
         </form>
 
         <div className={styles.footer}>
-          <span>Ainda não tem uma conta?</span>
+          <span>Já tem uma conta?</span>
           <button
             type="button"
             className={styles.footerLink}
-            onClick={() => navigate('/cadastro')}
+            onClick={() => navigate('/login')}
           >
             Clique aqui
           </button>
@@ -109,4 +130,4 @@ function LoginPage() {
   )
 }
 
-export default LoginPage
+export default RegisterPage
