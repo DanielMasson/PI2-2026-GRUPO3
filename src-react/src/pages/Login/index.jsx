@@ -47,6 +47,7 @@ function LoginPage() {
   }
 
   return (
+    <div className={styles.bbody}>
     <div className={styles.container}>
       <div className={styles.card}>
 
@@ -105,6 +106,7 @@ function LoginPage() {
         </div>
 
       </div>
+    </div>
     </div>
   )
 }

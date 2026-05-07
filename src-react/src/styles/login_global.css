@@ -51,14 +51,10 @@
 }
 
 body {
-  position: fixed;
-  height: 100%;
-  width: 100%;
   font-family: var(--font-family);
   background-color: var(--color-background);
   color: var(--color-text);
   font-size: var(--font-size-md);
   line-height: 1.5;
-  overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
