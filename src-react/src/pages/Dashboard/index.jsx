@@ -135,6 +135,9 @@ function Dashboard() {
                   </span>
                 </div>
               </div>
+              <button onClick={() => navigate(`/propriedade/${prop.id}/saude`)}>
+              Módulo de Saúde
+              </button>
 
               <div className={styles.cardActions}>
                 <button

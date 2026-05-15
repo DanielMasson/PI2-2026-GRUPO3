@@ -8,6 +8,7 @@ import VerifyCode from './pages/VerifyCode';
 import CreatePassword from './pages/CreatePassword';
 import Dashboard from './pages/Dashboard';
 import CadastroAnimal from './pages/AnimalRegistration';
+import HealthModule from './pages/HealthModule';
 import './styles/login_global.css'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/criar-senha" element={<CreatePassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/propriedade/:propriedadeId/cadastro-animal" element={<CadastroAnimal />} />
+        <Route path="/propriedade/:propriedadeId/saude" element={<HealthModule />} />
       </Routes>
     </HashRouter>
   );
