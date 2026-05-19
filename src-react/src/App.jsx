@@ -2,13 +2,9 @@ import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import VerifyCode from './pages/VerifyCode';
-import CreatePassword from './pages/CreatePassword';
 import Dashboard from './pages/Dashboard';
 import CadastroAnimal from './pages/AnimalRegistration';
-import HealthModule from './pages/HealthModule';
+import PropertyHome from './pages/PropertyHome';
 import './styles/login_global.css'
 
 function App() {
@@ -17,13 +13,17 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/cadastro" element={<Register />} />
-        <Route path="/esqueci-senha" element={<ForgotPassword />} />
-        <Route path="/verificar-codigo" element={<VerifyCode />} />
-        <Route path="/criar-senha" element={<CreatePassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Página inicial da propriedade — nova rota */}
+        <Route path="/propriedade/:propriedadeId" element={<PropertyHome />} />
+
+        {/* Cadastro de animal */}
         <Route path="/propriedade/:propriedadeId/cadastro-animal" element={<CadastroAnimal />} />
-        <Route path="/propriedade/:propriedadeId/saude" element={<HealthModule />} />
+
+        {/* Futuras rotas */}
+        {/* <Route path="/propriedade/:propriedadeId/lotes" element={<Lotes />} /> */}
+        {/* <Route path="/propriedade/:propriedadeId/tarefas" element={<Tarefas />} /> */}
       </Routes>
     </HashRouter>
   );

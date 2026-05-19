@@ -50,7 +50,7 @@ function Dashboard() {
   )
 
   function handleAbrirPropriedade(id) {
-    navigate(`/propriedade/${id}/cadastro-animal`)
+    navigate(`/propriedade/:${id}`)
   }
 
   function handleExcluir(e, id) {
