@@ -1,0 +1,70 @@
+﻿Resumo: O nosso projeto provém do objetivo de auxiliar os produtores de animais no controle macro e micro de suas propriedades, assim, ajudando no controle da área da suas propriedade, mas principalmente ter o controle do cada animal individualmente, visando principalmente animais de produção, (gado, porcos, ovelhas, etc) dando acesso à informações que os sistemas atuais não concedem, como o SISBOV por exemplo, ele traz apenas informações do nascimento e de onde o animal veio, já o nosso programa, traria ,mais informações como dados biométricos, calendário de vacinas, análise de custo e desempenho, se o animal está trazendo lucro, entre outras informações
+
+
+Público-alvo: Pequenos e grandes produtores de animais, foco inicial em animais disponíveis no campus (ovelhas e gado). Inicialmente da região Oeste de Santa Catarina.
+Módulo de Identificação e Dados Biométricos
+Identificadores básicos dos animais.
+* Identificadores Primarios:
+   * ID Interno: Gerado automaticamente pelo app.
+   * ID Físico: Número físico de identificação(Colar, Brinco, etc).
+   * Nome/Apelido: Identificação opcional para animais.
+   * Origem: Onde o animal nasceu, histórico de movimentação.
+   * Genética: Registrar se o animal é puro ou qual a mistura (Ex: 1/2 Angus + 1/2 Nelore)
+* Biometria e Características:
+   * Espécie e Raça: (Ex: Bovino - Nelore; Ovino - Santa Inês).
+   * Sexo: Macho ou Fêmea.
+   * Data de Nascimento: Para cálculo automático da idade em meses/anos.
+   * Peso Inicial: Registro do peso na entrada do sistema.
+   * Pelagem/Sinais: Descrição visual para identificação em caso de perda do identificador.
+
+
+Módulo de Saúde e Calendário Sanitário
+Este módulo automatiza o plano sanitário da propriedade, evitando esquecimentos que causam prejuízos.
+* Calendário de Vacinas:
+   * Vacinas Obrigatórias: Checklist com datas de vacinas da raça específica.
+   * Alertas de Ciclo: Notificação automática X dias antes da dose de reforço.
+   * Registro de Aplicação: Data, lote da vacina e responsável pela aplicação.
+* Controle de Vermifugação e Medicamentos:
+   * Tratamentos: Registro de antibióticos ou suplementos aplicados.
+   * Período de Carência : Cronômetro que sinaliza se o animal foi medicado recentemente e não pode ter a carne ou leite consumidos/vendidos.
+* Ocorrências Clínicas:
+   * Registro: Log de sintomas com campo para descrição de tratamento e resultados.
+* Local de contenção:
+   * Movimentação diária: Espaço da fazendo que dorme, que se alimenta, etc.
+
+
+Módulo de Desempenho e Produção
+Focado nos indicadores de ganho de peso e eficiência.
+* Histórico de Pesagem: Tabela de datas e pesos sucessivos.
+* Cálculo de GMD (Ganho Médio Diário):
+* Score de Condição Corporal (ECC): Escala visual (1 a 5) para avaliar se o animal está magro, ideal ou obeso.
+Módulos de desempenho especializado
+Funcionalidades mais específicas para raça, Ex: Gado leiteiro
+* Controle Leiteiro Diário: Quantos litros a vaca produziu na ordenha da manhã e da tarde.
+* Qualidade do Leite: Um campo para registrar o índice de CCS (Contagem de Células Somáticas), que indica mastite.
+* Data de Secagem: O dia exato em que a vaca deve parar de ser ordenhada para se preparar para o próximo parto.
+Módulo Reprodutivo
+* Ciclo de Cobertura: Data da monta natural ou inseminação artificial (IA).
+* Confirmação de Prenhez: Checkbox após exame de toque/ultrassom.
+* Gestação: Contador de dias regressivos até a data provável do parto.
+* Genealogia: Vínculo com o ID do Pai (Touro) e Mãe (Matriz).
+
+
+Módulo Financeiro Individualizado
+* Custo Acumulado:
+   * Valor de compra do animal + Somas de (Vacinas + Medicamentos + Rações estimada).
+* Indicador de Lucratividade:
+   * Comparação entre o custo total acumulado e o valor de mercado atual (baseado no peso).
+* Registro de Baixa: Motivo da saída (Venda, Morte ou Consumo Próprio) com registro de rendimento.
+Requisitos Não Funcionais (Especificações de TI)
+* Sincronização Offline-First: O banco de dados local armazena os dados e faz o backup na nuvem ao detectar Wi-Fi.
+* Interface de Alto Contraste: Cores e botões grandes para navegação intuitiva e leitura sob luz solar intensa.
+* Acesso Multinível: Login para o Dono da Propriedade e para o Peão/Tratador com autorizações de alteração nos dados configuráveis .
+* Modo de informações: Modo de informações mais simples ou especializadas.
+
+
+Anotacoes:
+
+
+* Porcentagem de vacas em lactacao ou prontas para reprodução
+* Vacas com tantos dias em leite
