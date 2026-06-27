@@ -1,93 +1,83 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import { usePropriedade } from '../../contexts/PropriedadeContext'
+import * as propriedadeService from '../../services/propriedadeService'
 import styles from './Dashboard.module.css'
 import BottomNav from '../../components/BottomNav'
 
-const PROPRIEDADES_INICIAIS = [
-  {
-    id: 'fazenda-norte',
-    brinco: 'Prop 001',
-    nome: 'Fazenda Norte',
-    localizacao: 'Sorriso, MT',
-    totalAnimais: 240,
-    lotes: 8,
-  },
-  {
-    id: 'sitio-bela-vista',
-    brinco: 'Prop 002',
-    nome: 'Sítio Bela Vista',
-    localizacao: 'Rio Verde, GO',
-    totalAnimais: 85,
-    lotes: 3,
-  },
-  {
-    id: 'estancia-sul',
-    brinco: 'Prop 003',
-    nome: 'Estância Sul',
-    localizacao: 'Bagé, RS',
-    totalAnimais: 412,
-    lotes: 14,
-  },
-  {
-    id: 'fazenda-dois-irmaos',
-    brinco: 'Prop 004',
-    nome: 'Fazenda Dois Irmãos',
-    localizacao: 'Uberaba, MG',
-    totalAnimais: 130,
-    lotes: 5,
-  },
-]
-
 function Dashboard() {
   const navigate = useNavigate()
+  const { usuario, logout } = useAuth()
+  const { selecionarPropriedade } = usePropriedade()
   const [busca, setBusca] = useState('')
-  const [propriedades, setPropriedades] = useState(PROPRIEDADES_INICIAIS)
+  const [propriedades, setPropriedades] = useState([])
+  const [carregando, setCarregando] = useState(true)
+  const [mostrarModal, setMostrarModal] = useState(false)
+  const [novaProp, setNovaProp] = useState({ nome: '', localizacao: '', tamanho_ha: '' })
+
+  // Carregar propriedades do banco
+  useEffect(() => {
+    if (!usuario) return
+    propriedadeService.listarPropriedades(usuario.uuid)
+      .then(lista => setPropriedades(lista || []))
+      .catch(() => setPropriedades([]))
+      .finally(() => setCarregando(false))
+  }, [usuario])
 
   const propriedadesFiltradas = propriedades.filter(p =>
     p.nome.toLowerCase().includes(busca.toLowerCase()) ||
-    p.brinco.toLowerCase().includes(busca.toLowerCase()) ||
     p.localizacao.toLowerCase().includes(busca.toLowerCase())
   )
 
-  function handleAbrirPropriedade(id) {
-    navigate(`/propriedade/:${id}`)
+  async function handleAbrirPropriedade(uuid) {
+    await selecionarPropriedade(uuid)
+    navigate(`/propriedade/${uuid}`)
   }
 
-  function handleExcluir(e, id) {
+  async function handleExcluir(e, uuid) {
     e.stopPropagation()
-    setPropriedades(prev => prev.filter(p => p.id !== id))
+    await propriedadeService.excluirPropriedade(uuid)
+    setPropriedades(prev => prev.filter(p => p.uuid !== uuid))
   }
 
-  function handleEditar(e, id) {
+  function handleEditar(e, uuid) {
     e.stopPropagation()
-    // Futuramente: abrir modal de edição
-    alert(`Editar propriedade: ${id}`)
+    alert(`Editar propriedade: ${uuid}`)
   }
 
-  function handleAdicionarPropriedade() {
-    // Futuramente: abrir modal/tela de criação
-    alert('Adicionar nova propriedade')
+  async function handleAdicionarPropriedade() {
+    if (!novaProp.nome.trim() || !novaProp.localizacao.trim()) return
+    const prop = await propriedadeService.criarPropriedade({
+      nome: novaProp.nome,
+      localizacao: novaProp.localizacao,
+      tamanho_ha: novaProp.tamanho_ha ? Number(novaProp.tamanho_ha) : null,
+      dono_uuid: usuario.uuid,
+    })
+    setPropriedades(prev => [...prev, prop])
+    setNovaProp({ nome: '', localizacao: '', tamanho_ha: '' })
+    setMostrarModal(false)
   }
 
   function handleLogout() {
+    logout()
     navigate('/login')
   }
 
   return (
     <div className={styles.screen}>
-      {/* ─── Header verde ─── */}
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div>
-            <h1 className={styles.appTitle}>Propriedade Inteligente</h1>
-            <p className={styles.appSubtitle}>Gestão Individual de Rebanho</p>
-          </div>
-          <button className={styles.bellBtn} onClick={handleLogout} aria-label="Sair">
-            {/* Bell icon — futuramente: notificações */}
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
+      {/* ─── Topbar ─── */}
+      <header className={styles.topbar}>
+        <div className={styles.topbarLeft}>
+          <h1 className={styles.appTitle}>Propriedade Inteligente</h1>
+          <p className={styles.appSubtitle}>Gestão Individual de Rebanho</p>
+        </div>
+        <div className={styles.topbarActions}>
+          <button className={styles.iconBtn} onClick={() => navigate('/configuracoes')} aria-label="Configurações">
+            ⚙️
+          </button>
+          <button className={styles.iconBtn} onClick={handleLogout} aria-label="Sair">
+            🚪
           </button>
         </div>
       </header>
@@ -96,12 +86,7 @@ function Dashboard() {
       <main className={styles.body}>
         {/* Search */}
         <div className={styles.searchWrapper}>
-          <span className={styles.searchIcon}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-          </span>
+          <span className={styles.searchIcon}>🔍</span>
           <input
             className={styles.searchInput}
             type="text"
@@ -113,67 +98,105 @@ function Dashboard() {
 
         {/* Lista */}
         <div className={styles.list}>
-          {propriedadesFiltradas.length === 0 && (
+          {carregando && <p className={styles.emptyMsg}>Carregando...</p>}
+          {!carregando && propriedadesFiltradas.length === 0 && (
             <p className={styles.emptyMsg}>Nenhuma propriedade encontrada.</p>
           )}
 
           {propriedadesFiltradas.map(prop => (
             <div
-              key={prop.id}
+              key={prop.uuid}
               className={styles.card}
-              onClick={() => handleAbrirPropriedade(prop.id)}
+              onClick={() => handleAbrirPropriedade(prop.uuid)}
               role="button"
               tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && handleAbrirPropriedade(prop.id)}
+              onKeyDown={e => e.key === 'Enter' && handleAbrirPropriedade(prop.uuid)}
             >
               <div className={styles.cardLeft}>
-                <span className={styles.brincoTag}>{prop.brinco}</span>
+                <span className={styles.cardIcon}>🏡</span>
                 <div className={styles.cardInfo}>
                   <span className={styles.cardName}>{prop.nome}</span>
-                  <span className={styles.cardMeta}>
-                    {prop.localizacao} &nbsp;·&nbsp; {prop.totalAnimais} animais
+                  <span className={styles.cardMeta}>{prop.localizacao}</span>
+                  <span className={styles.cardTag}>
+                    {prop.tamanho_ha ? `${prop.tamanho_ha} ha` : 'Sem área informada'}
                   </span>
                 </div>
               </div>
-              <button onClick={() => navigate(`/propriedade/${prop.id}/saude`)}>
-              Módulo de Saúde
-              </button>
 
               <div className={styles.cardActions}>
                 <button
                   className={`${styles.actionBtn} ${styles.editBtn}`}
-                  onClick={e => handleEditar(e, prop.id)}
+                  onClick={e => handleEditar(e, prop.uuid)}
                   aria-label="Editar"
                 >
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
+                  ✏️
                 </button>
                 <button
                   className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                  onClick={e => handleExcluir(e, prop.id)}
+                  onClick={e => handleExcluir(e, prop.uuid)}
                   aria-label="Excluir"
                 >
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                    <path d="M10 11v6M14 11v6"/>
-                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                  </svg>
+                  🗑️
                 </button>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Modal adicionar propriedade */}
+        {mostrarModal && (
+          <div style={{ padding: '1rem', borderTop: '1px solid #333' }}>
+            <p className={styles.sectionTitle} style={{ marginBottom: '0.5rem' }}>Nova propriedade</p>
+            <input
+              className={styles.searchInput}
+              type="text"
+              placeholder="Nome da propriedade"
+              value={novaProp.nome}
+              onChange={e => setNovaProp(prev => ({ ...prev, nome: e.target.value }))}
+              style={{ marginBottom: '0.5rem' }}
+            />
+            <input
+              className={styles.searchInput}
+              type="text"
+              placeholder="Localização (cidade, UF)"
+              value={novaProp.localizacao}
+              onChange={e => setNovaProp(prev => ({ ...prev, localizacao: e.target.value }))}
+              style={{ marginBottom: '0.5rem' }}
+            />
+            <input
+              className={styles.searchInput}
+              type="number"
+              placeholder="Tamanho (hectares)"
+              value={novaProp.tamanho_ha}
+              onChange={e => setNovaProp(prev => ({ ...prev, tamanho_ha: e.target.value }))}
+              style={{ marginBottom: '0.5rem' }}
+            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className={`${styles.actionBtn} ${styles.editBtn}`}
+                onClick={handleAdicionarPropriedade}
+                style={{ flex: 1, padding: '0.75rem', background: '#2d6a4f', color: '#fff', border: 'none', borderRadius: '8px' }}
+              >
+                Salvar
+              </button>
+              <button
+                className={styles.actionBtn}
+                onClick={() => setMostrarModal(false)}
+                style={{ flex: 1, padding: '0.75rem', background: '#444', color: '#fff', border: 'none', borderRadius: '8px' }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ─── Bottom Nav ─── */}
       <BottomNav
         activeTab="home"
         onHome={() => {}}
-        onAdd={handleAdicionarPropriedade}
-        onSettings={() => alert('Ajustes — em breve')}
+        onAdd={() => setMostrarModal(true)}
+        onSettings={() => navigate('/configuracoes')}
       />
     </div>
   )

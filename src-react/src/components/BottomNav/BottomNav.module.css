@@ -1,20 +1,19 @@
 /* ─── BottomNav ─────────────────────────────────────────────────────────── */
+/* Otimizado para toque fácil (produtores rurais) */
 
 .nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 72px;
-  background-color: #ffffff;
-  border-top: 1px solid #e8e8e8;
+  height: 80px;
+  background-color: #1a241a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-around;
   padding: 0 var(--space-md);
   z-index: 100;
-
-  /* Safe area para iPhones com notch */
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -25,22 +24,35 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 5px;
   background: none;
   border: none;
   cursor: pointer;
-  color: #b0b0b0;
+  color: #9b92b8;
   padding: var(--space-sm) 0;
   transition: color var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
+  min-height: 48px;
+  position: relative;
 }
 
 .tab:hover {
-  color: #888;
+  color: #f0ecff;
 }
 
 .tabActive {
-  color: var(--color-primary);
+  color: #82c341;
+}
+
+.tabActive::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 3px;
+  background-color: #82c341;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
 
 .tabIcon {
@@ -48,13 +60,15 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+  font-size: 26px;
 }
 
 .tabLabel {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   font-family: var(--font-family);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* ─── Botão central + ─── */
@@ -63,15 +77,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Levanta o botão acima da barra */
   margin-bottom: 20px;
 }
 
 .addBtn {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background-color: var(--color-primary);
+  background-color: #82c341;
   border: none;
   color: #ffffff;
   display: flex;
@@ -84,7 +97,7 @@
 }
 
 .addBtn:hover {
-  background-color: var(--color-primary-dark);
+  background-color: #6ba832;
   box-shadow: 0 6px 20px rgba(78, 138, 26, 0.5);
 }
 

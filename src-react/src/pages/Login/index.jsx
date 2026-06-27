@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 import styles from './Login.module.css'
 import Button from '../../components/Button/index.jsx'
 import Input from '../../components/Input/index.jsx'
@@ -16,10 +17,12 @@ function validateForm({ email, password }) {
 
 function LoginPage() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [fields, setFields] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+	const lastSubmitRef = useRef(0)
 
   function handleChange(e) {
     const { name, value } = e.target
@@ -37,10 +40,10 @@ function LoginPage() {
     }
     setIsLoading(true)
     try {
-      await new Promise(r => setTimeout(r, 1000))
+      await login(fields.email, fields.password)
       navigate('/dashboard')
-    } catch {
-      setFormError('E-mail ou senha incorretos.')
+    } catch (err) {
+      setFormError(err.message || 'E-mail ou senha incorretos.')
     } finally {
       setIsLoading(false)
     }

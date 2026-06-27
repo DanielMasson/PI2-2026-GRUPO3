@@ -1,16 +1,17 @@
 import styles from './Input.module.css'
 
-function Input({ label, error, id, ...props }) {
+function Input({ label, error, id, variant, ...props }) {
+  const isDark = variant === 'dark'
   return (
-    <div className={styles.wrapper}>
+    <div className={`${styles.wrapper} ${isDark ? styles.dark : ''}`}>
       {label && (
-        <label className={styles.label} htmlFor={id}>
+        <label className={`${styles.label} ${isDark ? styles.labelDark : ''}`} htmlFor={id}>
           {label}
         </label>
       )}
       <input
         id={id}
-        className={`${styles.input} ${error ? styles.hasError : ''}`}
+        className={`${styles.input} ${isDark ? styles.inputDark : ''} ${error ? styles.hasError : ''}`}
         {...props}
       />
       {error && <span className={styles.errorMessage}>{error}</span>}

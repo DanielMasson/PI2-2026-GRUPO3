@@ -1,0 +1,262 @@
+/* ── Layout ── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #0f1a0f;
+  font-family: var(--font-family);
+}
+
+/* ── Topbar ── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #1a241a;
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.backBtn {
+  background: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f0ecff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.backBtn:hover {
+  border-color: #c8a97e;
+  background-color: rgba(200, 169, 126, 0.1);
+}
+
+.topbarTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  line-height: 1.2;
+}
+
+.topbarSub {
+  font-size: 11px;
+  color: #9b92b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.topbarActions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.iconBtn {
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: #9b92b8;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f0ecff;
+}
+
+/* ── Scroll area ── */
+.scrollArea {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+
+.inner {
+  padding: var(--space-lg);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Busca ── */
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-md);
+  height: 44px;
+  margin-bottom: var(--space-md);
+}
+
+.searchIcon {
+  font-size: 14px;
+  color: #9b92b8;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: var(--font-size-sm);
+  color: #f0ecff;
+  width: 100%;
+  font-family: var(--font-family);
+}
+
+.searchInput::placeholder {
+  color: rgba(155, 146, 184, 0.5);
+}
+
+/* ── Filtro por espécie ── */
+.filtroTabs {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.filtroTab {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-pill);
+  padding: 6px 16px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: #9b92b8;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-family);
+}
+
+.filtroTab:hover {
+  color: #f0ecff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.filtroAtivo {
+  background-color: #4e8a1a;
+  border-color: #4e8a1a;
+  color: #ffffff;
+}
+
+.filtroAtivo:hover {
+  background-color: #3a6812;
+  border-color: #3a6812;
+  color: #ffffff;
+}
+
+/* ── Contagem ── */
+.contagem {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+  margin-bottom: var(--space-md);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+/* ── Empty state ── */
+.emptyState {
+  text-align: center;
+  padding: var(--space-2xl) var(--space-lg);
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+}
+
+/* ── Lista de animais ── */
+.animalList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* ── Card de animal ── */
+.animalCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.animalCard:hover {
+  background-color: #1f2e1f;
+  transform: translateX(2px);
+}
+
+.animalCardLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.animalIcon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.animalInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.animalNome {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+}
+
+.animalMeta {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+}
+
+.animalTag {
+  background: rgba(200, 169, 126, 0.15);
+  color: #c8a97e;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+/* ── Responsivo ── */
+@media (max-width: 560px) {
+  .filtroTabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

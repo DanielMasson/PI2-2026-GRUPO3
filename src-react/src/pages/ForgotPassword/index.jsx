@@ -16,22 +16,27 @@ function ForgotPasswordPage() {
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
   }
 
-  function validate() {
+  function validarEmail() {
     const errs = {}
-    if (!fields.email && !fields.phone)
-      errs.email = 'Informe e-mail ou telefone'
+    if (!fields.email.trim()) errs.email = 'Informe o e-mail'
+    return errs
+  }
+
+  function validarTelefone() {
+    const errs = {}
+    if (!fields.phone.trim()) errs.phone = 'Informe o telefone'
     return errs
   }
 
   function handleSendEmail() {
-    const errs = validate()
+    const errs = validarEmail()
     if (Object.keys(errs).length) { setErrors(errs); return }
     // Futuramente: chamada API de envio por e-mail
     navigate('/verificar-codigo', { state: { method: 'email' } })
   }
 
   function handleSendSMS() {
-    const errs = validate()
+    const errs = validarTelefone()
     if (Object.keys(errs).length) { setErrors(errs); return }
     // Futuramente: chamada API de envio por SMS
     navigate('/verificar-codigo', { state: { method: 'sms' } })

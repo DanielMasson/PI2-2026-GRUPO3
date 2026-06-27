@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import styles from '../Login/Login.module.css'
 import codeStyles from './VerifyCode.module.css'
+import Button from '../../components/Button/index.jsx'
 import logo from '../../assets/logo.png'
 
 function VerifyCodePage() {
@@ -10,7 +11,11 @@ function VerifyCodePage() {
   const method = location.state?.method || 'email'
 
   const [digits, setDigits] = useState(['', '', '', ''])
-  const refs = [useRef(), useRef(), useRef(), useRef()]
+  const ref0 = useRef()
+  const ref1 = useRef()
+  const ref2 = useRef()
+  const ref3 = useRef()
+  const refs = [ref0, ref1, ref2, ref3]
 
   function handleDigit(index, value) {
     if (!/^\d?$/.test(value)) return
@@ -65,9 +70,9 @@ function VerifyCodePage() {
         </div>
 
         {isComplete && (
-          <button className={codeStyles.verifyBtn} onClick={handleVerify}>
+          <Button onClick={handleVerify}>
             Verificar
-          </button>
+          </Button>
         )}
 
         <div className={styles.footer}>

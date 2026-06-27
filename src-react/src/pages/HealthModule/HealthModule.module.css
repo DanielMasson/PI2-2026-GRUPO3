@@ -1,51 +1,52 @@
-/* HealthModule.module.css — Visão geral / lista de animais */
-
-.screen {
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f4f4f4;
+  background-color: #0f1a0f;
   font-family: var(--font-family);
 }
 
-/* ── Topbar ── */
+.inner {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + 80px);
+}
+
+/* ─── Topbar ──────────────────────────────────────────────────────────────── */
 .topbar {
-  background-color: #1a241a;
-  padding: var(--space-md) var(--space-lg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.topbarLeft {
+  background-color: #1a241a;
+  padding: var(--space-md) var(--space-lg);
+  padding-top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .backBtn {
   background: none;
-  border: 1.5px solid rgba(255,255,255,0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   color: #f0ecff;
   font-size: 16px;
-  cursor: pointer;
   flex-shrink: 0;
   transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .backBtn:hover {
-  border-color: #82c341;
-  background-color: rgba(130,195,65,0.1);
+  border-color: #c8a97e;
+  background-color: rgba(200, 169, 126, 0.1);
 }
 
 .pageTitle {
@@ -55,293 +56,487 @@
   line-height: 1.2;
 }
 
-.pageSub {
+.pageSubtitle {
   font-size: 11px;
   color: #9b92b8;
-  text-transform: uppercase;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 2px;
 }
 
-/* ── Summary pills ── */
-.summaryRow {
+/* ─── Tabs ────────────────────────────────────────────────────────────────── */
+.tabs {
   display: flex;
   gap: var(--space-sm);
-  padding: var(--space-md) var(--space-lg) 0;
+  margin-bottom: var(--space-lg);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
 }
 
-.summaryPill {
-  flex: 1;
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: var(--space-sm) var(--space-xs);
-  border-radius: var(--radius-md);
-  gap: 2px;
-}
-
-.pillCount {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  line-height: 1;
-}
-
-.pillLabel {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.pillUrgente {
-  background-color: rgba(231,76,60,0.12);
-  border: 1.5px solid rgba(231,76,60,0.25);
-}
-
-.pillUrgente .pillCount,
-.pillUrgente .pillLabel {
-  color: #e74c3c;
-}
-
-.pillAtencao {
-  background-color: rgba(230,126,34,0.12);
-  border: 1.5px solid rgba(230,126,34,0.25);
-}
-
-.pillAtencao .pillCount,
-.pillAtencao .pillLabel {
-  color: #e67e22;
-}
-
-.pillOk {
-  background-color: rgba(130,195,65,0.12);
-  border: 1.5px solid rgba(130,195,65,0.25);
-}
-
-.pillOk .pillCount,
-.pillOk .pillLabel {
-  color: #5a9e1a;
-}
-
-/* ── Search ── */
-.searchRow {
-  padding: var(--space-md) var(--space-lg) 0;
-}
-
-.searchWrapper {
-  position: relative;
-}
-
-.searchIcon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  pointer-events: none;
-}
-
-.searchInput {
-  width: 100%;
-  padding: 10px 14px 10px 36px;
-  background-color: #ffffff;
-  border: 1.5px solid #e8e8e8;
+  gap: 6px;
+  padding: var(--space-sm) var(--space-md);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-pill);
+  background: transparent;
+  cursor: pointer;
   font-size: var(--font-size-sm);
+  font-weight: 500;
   font-family: var(--font-family);
-  color: var(--color-text);
+  color: #9b92b8;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.tab:hover {
+  border-color: #c8a97e;
+  color: #f0ecff;
+}
+
+.tabAtiva {
+  background-color: #1a241a;
+  border-color: #c8a97e;
+  color: #f0ecff;
+  font-weight: 600;
+}
+
+.tabAtiva:hover {
+  background-color: #1f2e1f;
+  border-color: #c8a97e;
+  color: #f0ecff;
+}
+
+.tabIcon { font-size: 16px; }
+.tabLabel { font-size: var(--font-size-sm); }
+
+/* ─── Cards ───────────────────────────────────────────────────────────────── */
+.card {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.cardTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  margin-bottom: var(--space-md);
+}
+
+.cardHeader .cardTitle { margin-bottom: 0; }
+
+.addBtn {
+  background: rgba(200, 169, 126, 0.15);
+  border: 1px solid rgba(200, 169, 126, 0.3);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  font-family: var(--font-family);
+  color: #c8a97e;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.addBtn:hover { background-color: rgba(200, 169, 126, 0.25); }
+
+/* ─── Vacinas ─────────────────────────────────────────────────────────────── */
+.vacinaList { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.vacinaItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid transparent;
+  flex-wrap: wrap;
+}
+
+.vacinaItem.ok    { border-left-color: #4e8a1a; }
+.vacinaItem.proxima { border-left-color: #e67e22; }
+.vacinaItem.urgente { border-left-color: #c0392b; }
+.vacinaItem.vencida { border-left-color: #ff3b30; }
+
+.vacinaInfo { display: flex; flex-direction: column; gap: 3px; }
+.vacinaNome { font-size: var(--font-size-md); font-weight: 700; color: #f0ecff; }
+.vacinaMeta { font-size: var(--font-size-sm); color: #9b92b8; }
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #9b92b8;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.deleteBtn:hover {
+  color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.vacinaRight { display: flex; align-items: center; gap: var(--space-sm); flex-shrink: 0; }
+
+.diasBadge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.diasBadge.ok      { background-color: rgba(78,138,26,0.2); color: #82c341; }
+.diasBadge.proxima { background-color: rgba(230,126,34,0.2); color: #e67e22; }
+.diasBadge.urgente { background-color: rgba(192,57,43,0.2); color: #c0392b; }
+.diasBadge.vencida { background-color: rgba(255,59,48,0.2); color: #ff3b30; }
+
+/* ─── Formulários dentro do card escuro ──────────────────────────────────── */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.formGridFull { grid-column: 1 / -1; }
+
+.selectLabel {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.select {
+  width: 100%;
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  color: #f0ecff;
+  font-size: var(--font-size-md);
+  min-height: 48px;
   outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239b92b8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  font-family: var(--font-family);
   transition: border-color var(--transition-fast);
 }
 
-.searchInput:focus {
-  border-color: #4e8a1a;
-}
+.select:focus { border-color: #c8a97e; }
+.select option { background-color: #1a241a; }
+.selectError { border-color: var(--color-error) !important; }
+.errorMsg { font-size: var(--font-size-sm); color: var(--color-error); margin-top: 2px; display: block; }
 
-.searchInput::placeholder {
-  color: #b0b0b0;
-}
-
-/* ── Filter buttons ── */
-.filterRow {
-  display: flex;
-  gap: var(--space-xs);
-  padding: var(--space-sm) var(--space-lg) 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.filterRow::-webkit-scrollbar {
-  display: none;
-}
-
-.filterBtn {
-  padding: 5px 14px;
-  border-radius: var(--radius-pill);
-  border: 1.5px solid #d8d8d8;
-  background: transparent;
-  font-size: var(--font-size-sm);
+.textarea {
+  width: 100%;
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  color: #f0ecff;
+  font-size: var(--font-size-md);
   font-family: var(--font-family);
-  font-weight: 500;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--transition-fast);
+  resize: vertical;
+  outline: none;
+  transition: border-color var(--transition-fast);
+  line-height: 1.5;
 }
 
-.filterBtn:hover {
-  border-color: #4e8a1a;
-  color: #4e8a1a;
-}
+.textarea:focus { border-color: #c8a97e; }
+.textarea::placeholder { color: rgba(155, 146, 184, 0.5); }
 
-.filterActive {
-  background-color: #1a241a;
-  border-color: #1a241a;
-  color: #f0ecff !important;
-  font-weight: 600;
-}
-
-/* ── Animal list ── */
-.list {
-  padding: var(--space-md) var(--space-lg) var(--space-xl);
+.formActions {
+  margin-top: var(--space-lg);
   display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--space-md);
 }
 
-.empty {
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-  padding: var(--space-xl) 0;
+.formActions > * { flex: 1; }
+
+/* ─── Listas de registros ─────────────────────────────────────────────────── */
+.logList { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.logItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
 }
 
-/* ── Animal card ── */
-.animalCard {
-  background-color: #ffffff;
-  border-radius: var(--radius-md);
+.logInfo { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.logTitle { font-size: var(--font-size-md); font-weight: 700; color: #f0ecff; }
+.logMeta { font-size: var(--font-size-sm); color: #9b92b8; }
+.logObs { font-size: var(--font-size-sm); color: rgba(155, 146, 184, 0.75); font-style: italic; }
+
+/* ─── Ocorrências ─────────────────────────────────────────────────────────── */
+.ocorrenciaItem {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.ocorrenciaHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+
+.ocorrenciaHeader:hover { background-color: rgba(255, 255, 255, 0.03); }
+
+.expandBtn {
+  font-size: 12px;
+  color: #9b92b8;
+}
+
+.ocorrenciaBody {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
   padding: var(--space-md);
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--space-sm);
-  cursor: pointer;
-  border: 1.5px solid #ebebeb;
-  border-left: 4px solid #d8d8d8;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
-  -webkit-tap-highlight-color: transparent;
 }
 
-.animalCard:hover {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  transform: translateY(-1px);
+.ocorrenciaField {
+  font-size: var(--font-size-sm);
+  color: #c8c3e0;
+  line-height: 1.6;
 }
 
-.animalCard:active {
-  transform: scale(0.99);
+/* ─── Localização ─────────────────────────────────────────────────────────── */
+.locGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: 0;
 }
 
-.animalCard.statusUrgente {
-  border-left-color: #e74c3c;
-}
-
-.animalCard.statusAtencao {
-  border-left-color: #e67e22;
-}
-
-.animalCard.statusOk {
-  border-left-color: #82c341;
-}
-
-/* Status dot (small indicator) */
-.statusDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: none; /* usamos a borda esquerda do card em vez do dot */
-}
-
-/* Animal info block */
-.animalMain {
-  flex: 1;
-  min-width: 0;
-}
-
-.animalNameRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  flex-wrap: wrap;
-  margin-bottom: 2px;
-}
-
-.animalName {
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.brincoTag {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
-  white-space: nowrap;
-}
-
-.animalMeta {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  margin-bottom: 6px;
-}
-
-/* Carência */
-.carenciaRow {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.carenciaIcon {
-  font-size: 13px;
-}
-
-.carenciaText {
-  font-size: 12px;
-  color: #e67e22;
-}
-
-.carenciaText strong {
-  font-weight: 700;
-}
-
-.carenciaClear {
-  font-size: 12px;
-  color: #5a9e1a;
-  font-weight: 500;
-}
-
-/* Right side: badge + arrow */
-.animalRight {
+.locCard {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-xs);
-  flex-shrink: 0;
+  gap: 4px;
 }
 
-.statusBadge {
+.locAnimal { font-size: var(--font-size-sm); font-weight: 700; color: #f0ecff; }
+.locArea { font-size: var(--font-size-md); font-weight: 600; color: #c8c3e0; }
+.locData { font-size: 11px; color: #9b92b8; margin-top: 4px; }
+
+/* ─── Badges / Tags ───────────────────────────────────────────────────────── */
+.badge {
   font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
+  font-weight: 600;
+  padding: 3px 8px;
   border-radius: var(--radius-pill);
+  background-color: rgba(192, 57, 43, 0.2);
+  color: #e74c3c;
   white-space: nowrap;
 }
 
-.arrow {
-  font-size: 20px;
-  color: #d0d0d0;
-  line-height: 1;
+.tagVerde {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(78, 138, 26, 0.2);
+  color: #82c341;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.tagAmarelo {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(230, 126, 34, 0.2);
+  color: #e67e22;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.tagVermelho {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(192, 57, 43, 0.2);
+  color: #e74c3c;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.tagCinza {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(155, 146, 184, 0.15);
+  color: #9b92b8;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+/* ─── Empty state e feedback ──────────────────────────────────────────────── */
+.emptyState {
+  text-align: center;
+  padding: var(--space-xl);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+  border: 1.5px dashed rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+.successToast {
+  background-color: rgba(78, 138, 26, 0.15);
+  border: 1px solid rgba(78, 138, 26, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #82c341;
+  text-align: center;
+  margin-top: var(--space-md);
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .formGrid { grid-template-columns: 1fr; }
+  .formGridFull { grid-column: 1; }
+  .locGrid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ─── Sprint 6: Dashboard de Saúde ─────────────────────────────────────────── */
+.dashGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+.dashCard {
+  background-color: #1a241a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dashCardLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dashCardValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: #f0ecff;
+  line-height: 1.1;
+}
+.dashCardHint {
+  font-size: 11px;
+  color: #9b92b8;
+}
+.dashCardAlerta .dashCardValue { color: #e67e22; }
+.dashCardCritico .dashCardValue { color: #c0392b; }
+
+.actionsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+/* ─── Sprint 6: Collapsible de Movimentações ──────────────────────────────── */
+.collapseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+.collapseHeader:hover { background-color: rgba(255, 255, 255, 0.07); }
+.collapseTitle { font-size: var(--font-size-md); font-weight: 700; color: #f0ecff; }
+.collapseHint { font-size: 12px; color: #9b92b8; }
+.collapseArrow {
+  font-size: 12px;
+  color: #9b92b8;
+  flex-shrink: 0;
+}
+.collapseBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+/* ─── Sprint 6: Lista-config de Vacinas Obrigatórias ───────────────────────── */
+.obrigatoriasList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.obrigatoriaItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
+}
+.obrigatoriaItem.inativa { opacity: 0.55; }
+.obrigatoriaInfo { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.obrigatoriaNome { font-size: var(--font-size-md); font-weight: 700; color: #f0ecff; }
+.obrigatoriaMeta { font-size: var(--font-size-sm); color: #9b92b8; }
+.obrigatoriaToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+@media (max-width: 560px) {
+  .dashGrid { grid-template-columns: 1fr; }
 }

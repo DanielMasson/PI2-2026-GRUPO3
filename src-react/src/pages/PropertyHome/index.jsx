@@ -1,59 +1,38 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import styles from './PropertyHome.module.css'
+import PropertyNav from '../../components/PropertyNav/index.jsx'
+import { usePropriedade } from '../../contexts/PropriedadeContext'
+import { useAlertas } from '../../hooks/useAlertas'
+import { useAnimais } from '../../hooks/useAnimais'
+import { useGestantes } from '../../hooks/useGestantes'
 
-/* ─── Dados de exemplo — substitua por props/API futuramente ─── */
-const MOCK_PROPERTY = {
-  nome: 'Fazenda Norte',
-  localizacao: 'Sorriso, MT',
+/* ─── Helpers ─── */
+
+/** Map useAlertas tipo to the alert icone */
+const ALERTA_ICONE_MAP = {
+  vacina_vencida: '\u{1FA7A}',
+  vacina_proxima: '\u{1FA7A}',
+  carencia_liberada: '\u26A0\uFE0F',
+  carencia_proxima: '\u26A0\uFE0F',
+  carencia_ativa: '\u26A0\uFE0F',
+  parto_proximo: '\uD83D\uDC04',
+  parto_atrasado: '\uD83D\uDC04',
 }
 
-/* Alertas — [] = sem alertas; adicione objetos conforme necessário */
-const ALERTAS = [
-  {
-    id: 1,
-    tipo: 'danger',        // 'danger' | 'warning' | 'info'
-    icone: '🩺',
-    titulo: 'Vacinação em atraso',
-    descricao: '14 animais com vacina vencida no lote A3',
-    tempo: 'Há 2 horas',
-  },
-  {
-    id: 2,
-    tipo: 'warning',
-    icone: '⚠️',
-    titulo: 'Produção abaixo da meta',
-    descricao: 'Ontem a produção ficou 12% abaixo da média semanal',
-    tempo: 'Há 6 horas',
-  },
-]
-
-/* Leite — última coleta */
-const LEITE = {
-  dataColeta: '17/05/2025',
-  totalLitros: null,           // null = campo vazio (placeholder)
-  mediaPorVaca: null,
-  vacasEmLactacao: null,
-  metaDiaria: null,
-}
-
-/* Rebanho */
-const REBANHO = {
-  totalAnimais: 240,
-  lotes: 8,
-  prenhas: null,
-  vazias: null,
-  machos: null,
-  femeas: null,
-}
-
-/* Financeiro */
-const FINANCEIRO = {
-  periodo: 'Maio 2025',
-  receita: null,
-  despesa: null,
-  saldo: null,
-  percentualMeta: 0,    // 0–100
+/** Convert a day-count to a human-readable relative time string */
+function tempoRelativo(dias) {
+  if (dias === null || dias === undefined) return ''
+  const abs = Math.abs(dias)
+  if (abs === 0) return 'Hoje'
+  if (abs === 1) return dias < 0 ? 'Há 1 dia' : 'Em 1 dia'
+  if (abs < 7) return dias < 0 ? `Há ${abs} dias` : `Em ${abs} dias`
+  if (abs < 30) {
+    const semanas = Math.floor(abs / 7)
+    return dias < 0 ? `Há ${semanas} semana${semanas > 1 ? 's' : ''}` : `Em ${semanas} semana${semanas > 1 ? 's' : ''}`
+  }
+  const meses = Math.floor(abs / 30)
+  return dias < 0 ? `Há ${meses} mês${meses > 1 ? 'es' : ''}` : `Em ${meses} mês${meses > 1 ? 'es' : ''}`
 }
 
 /* ─── Componentes auxiliares ─── */
@@ -90,19 +69,76 @@ function PropertyHome() {
   const { propriedadeId } = useParams()
   const [activeTab, setActiveTab] = useState('inicio')
 
-  const prop = MOCK_PROPERTY
+  // ── Context & hooks ──
+  const { propriedade, selecionarPropriedade, carregando: carregandoPropriedade } = usePropriedade()
+  const { alertas, carregando: carregandoAlertas } = useAlertas(propriedadeId)
+  const { animais, carregando: carregandoAnimais } = useAnimais(propriedadeId)
+ const { gestantes, carregando: carregandoGestantes } = useGestantes(propriedadeId)
 
-  const NAV_ITEMS = [
-    { key: 'inicio',   label: 'Início',  icone: '🏠' },
-    { key: 'animais',  label: 'Animais', icone: '🐄' },
-    { key: 'lotes',    label: 'Lotes',   icone: '🌾' },
-    { key: 'tarefas',  label: 'Tarefas', icone: '📋' },
-    { key: 'perfil',   label: 'Perfil',  icone: '👤' },
-  ]
+  // Select the property in context when the page loads
+  useEffect(() => {
+    if (propriedadeId) {
+      selecionarPropriedade(propriedadeId)
+    }
+  }, [propriedadeId, selecionarPropriedade])
+
+  // ── Map alertas to UI format ──
+  const alertasUI = useMemo(() =>
+    alertas.map(a => {
+          return {
+        uuid: a.uuid || a.tipo + a.titulo + a.descricao,
+        tipo: a.nivel || 'info',
+        icone: ALERTA_ICONE_MAP[a.tipo] || '\u2139\uFE0F',
+        titulo: a.titulo,
+        descricao: a.descricao,
+        tempo: tempoRelativo(a.tempo),
+      }
+    }),
+    [alertas]
+  )
+
+  // ── Rebanho stats from animais ──
+  const rebanho = useMemo(() => {
+    const totalAnimais = animais.length
+    const machos = animais.filter(a => a.sexo === 'macho').length
+    const femeas = animais.filter(a => a.sexo === 'femea').length
+    const prenhas = carregandoGestantes ? null : gestantes.length
+    const vazias = carregandoGestantes ? null : Math.max(0, femeas - gestantes.length)
+    return {
+      totalAnimais,
+      lotes: null, // no lote concept in current schema
+      prenhas,
+      vazias,
+      machos,
+      femeas,
+    }
+  }, [animais, gestantes, carregandoGestantes])
+
+  // ── Leite — post-MVP, keep empty values ──
+  const leite = {
+    dataColeta: null,
+    totalLitros: null,
+    mediaPorVaca: null,
+    vacasEmLactacao: null,
+    metaDiaria: null,
+  }
+
+  // ── Financeiro — post-MVP, keep empty values ──
+  const financeiro = {
+    periodo: null,
+    receita: null,
+    despesa: null,
+    saldo: null,
+    percentualMeta: 0,
+  }
 
   function handleNav(key) {
     if (key === 'animais') {
-      navigate(`/propriedade/${propriedadeId}/cadastro-animal`)
+      navigate(`/propriedade/${propriedadeId}/animais`)
+    } else if (key === 'reproducao') {
+      navigate(`/propriedade/${propriedadeId}/reproducao`)
+    } else if (key === 'leite') {
+      navigate(`/propriedade/${propriedadeId}/producao-leite`)
     } else {
       setActiveTab(key)
     }
@@ -118,13 +154,17 @@ function PropertyHome() {
             ←
           </button>
           <div>
-            <div className={styles.topbarTitle}>{prop.nome}</div>
-            <div className={styles.topbarSub}>{prop.localizacao}</div>
+            <div className={styles.topbarTitle}>
+              {carregandoPropriedade ? 'Carregando...' : (propriedade?.nome || 'Propriedade')}
+            </div>
+            <div className={styles.topbarSub}>
+              {propriedade?.localizacao || ''}
+            </div>
           </div>
         </div>
         <div className={styles.topbarActions}>
           <button className={styles.iconBtn} title="Notificações">🔔</button>
-          <button className={styles.iconBtn} title="Configurações">⚙️</button>
+          <button className={styles.iconBtn} title="Configurações" onClick={() => navigate('/configuracoes')}>⚙️</button>
         </div>
       </header>
 
@@ -135,14 +175,16 @@ function PropertyHome() {
         <section className={styles.alertsSection}>
           <p className={styles.sectionLabel}>⚡ Alertas</p>
 
-          {ALERTAS.length === 0 ? (
+          {carregandoAlertas ? (
+            <div className={styles.noAlerts}>Carregando alertas...</div>
+          ) : alertasUI.length === 0 ? (
             <div className={styles.noAlerts}>
               Nenhum alerta no momento ✓
             </div>
           ) : (
-            ALERTAS.map(alert => (
+            alertasUI.map(alert => (
               <div
-                key={alert.id}
+                key={alert.uuid}
                 className={`${styles.alertCard} ${styles['alert' + alert.tipo.charAt(0).toUpperCase() + alert.tipo.slice(1)]}`}
               >
                 <span className={styles.alertIcon}>{alert.icone}</span>
@@ -166,7 +208,7 @@ function PropertyHome() {
                 <span className={styles.milkIcon}>🐮</span>
                 <div>
                   <div className={styles.milkTitle}>Última coleta</div>
-                  <div className={styles.milkDate}>{LEITE.dataColeta}</div>
+                  <div className={styles.milkDate}>{leite.dataColeta || <EmptyValue />}</div>
                 </div>
               </div>
               <span className={styles.milkBadge}>Leite</span>
@@ -176,28 +218,28 @@ function PropertyHome() {
               <div className={styles.milkStat}>
                 <div className={styles.milkStatLabel}>Total coletado</div>
                 <div className={styles.milkStatValue}>
-                  {LEITE.totalLitros !== null ? LEITE.totalLitros : <EmptyValue />}
-                  {LEITE.totalLitros !== null && <span className={styles.milkStatUnit}>L</span>}
+                  {leite.totalLitros !== null ? leite.totalLitros : <EmptyValue />}
+                  {leite.totalLitros !== null && <span className={styles.milkStatUnit}>L</span>}
                 </div>
               </div>
               <div className={styles.milkStat}>
                 <div className={styles.milkStatLabel}>Média por vaca</div>
                 <div className={styles.milkStatValue}>
-                  {LEITE.mediaPorVaca !== null ? LEITE.mediaPorVaca : <EmptyValue />}
-                  {LEITE.mediaPorVaca !== null && <span className={styles.milkStatUnit}>L</span>}
+                  {leite.mediaPorVaca !== null ? leite.mediaPorVaca : <EmptyValue />}
+                  {leite.mediaPorVaca !== null && <span className={styles.milkStatUnit}>L</span>}
                 </div>
               </div>
               <div className={styles.milkStat}>
                 <div className={styles.milkStatLabel}>Em lactação</div>
                 <div className={styles.milkStatValue}>
-                  {LEITE.vacasEmLactacao !== null ? LEITE.vacasEmLactacao : <EmptyValue />}
+                  {leite.vacasEmLactacao !== null ? leite.vacasEmLactacao : <EmptyValue />}
                 </div>
               </div>
               <div className={styles.milkStat}>
                 <div className={styles.milkStatLabel}>Meta diária</div>
                 <div className={styles.milkStatValue}>
-                  {LEITE.metaDiaria !== null ? LEITE.metaDiaria : <EmptyValue />}
-                  {LEITE.metaDiaria !== null && <span className={styles.milkStatUnit}>L</span>}
+                  {leite.metaDiaria !== null ? leite.metaDiaria : <EmptyValue />}
+                  {leite.metaDiaria !== null && <span className={styles.milkStatUnit}>L</span>}
                 </div>
               </div>
             </div>
@@ -218,7 +260,9 @@ function PropertyHome() {
                 <div>
                   <div className={styles.herdTitle}>Visão geral</div>
                   <div className={styles.herdTotal}>
-                    {REBANHO.totalAnimais} animais · {REBANHO.lotes} lotes
+                    {carregandoAnimais
+                      ? 'Carregando...'
+                      : `${rebanho.totalAnimais} animais${rebanho.lotes !== null ? ` · ${rebanho.lotes} lotes` : ''}`}
                   </div>
                 </div>
               </div>
@@ -226,12 +270,12 @@ function PropertyHome() {
             </div>
 
             <div className={styles.herdGrid}>
-              <StatBox label="Total animais" value={REBANHO.totalAnimais} />
-              <StatBox label="Lotes ativos"  value={REBANHO.lotes} />
-              <StatBox label="Prenhas"       value={REBANHO.prenhas} />
-              <StatBox label="Vazias"        value={REBANHO.vazias} />
-              <StatBox label="Machos"        value={REBANHO.machos} />
-              <StatBox label="Fêmeas"        value={REBANHO.femeas} />
+              <StatBox label="Total animais" value={rebanho.totalAnimais} />
+              <StatBox label="Lotes ativos" value={rebanho.lotes} />
+              <StatBox label="Prenhas" value={rebanho.prenhas} />
+              <StatBox label="Vazias" value={rebanho.vazias} />
+              <StatBox label="Machos" value={rebanho.machos} />
+              <StatBox label="Fêmeas" value={rebanho.femeas} />
             </div>
 
             {/* Slot de imagem do rebanho */}
@@ -249,12 +293,14 @@ function PropertyHome() {
                 <span className={styles.financeIcon}>📊</span>
                 <div>
                   <div className={styles.financeTitle}>Resumo do mês</div>
-                  <div className={styles.financePeriod}>{FINANCEIRO.periodo}</div>
+                  <div className={styles.financePeriod}>
+                    {financeiro.periodo || <EmptyValue />}
+                  </div>
                 </div>
               </div>
-              <span className={`${styles.financeBadge} ${FINANCEIRO.saldo >= 0 ? styles.positive : styles.negative}`}>
-                {FINANCEIRO.saldo !== null
-                  ? (FINANCEIRO.saldo >= 0 ? '▲ Positivo' : '▼ Negativo')
+              <span className={`${styles.financeBadge} ${financeiro.saldo !== null ? (financeiro.saldo >= 0 ? styles.positive : styles.negative) : ''}`}>
+                {financeiro.saldo !== null
+                  ? (financeiro.saldo >= 0 ? '▲ Positivo' : '▼ Negativo')
                   : '— —'}
               </span>
             </div>
@@ -263,24 +309,24 @@ function PropertyHome() {
               <div className={styles.financeStat}>
                 <div className={styles.financeStatLabel}>Receita</div>
                 <div className={`${styles.financeStatValue} ${styles.income}`}>
-                  {FINANCEIRO.receita !== null
-                    ? `R$ ${FINANCEIRO.receita.toLocaleString('pt-BR')}`
+                  {financeiro.receita !== null
+                    ? `R$ ${financeiro.receita.toLocaleString('pt-BR')}`
                     : <EmptyValue />}
                 </div>
               </div>
               <div className={styles.financeStat}>
                 <div className={styles.financeStatLabel}>Despesas</div>
                 <div className={`${styles.financeStatValue} ${styles.expense}`}>
-                  {FINANCEIRO.despesa !== null
-                    ? `R$ ${FINANCEIRO.despesa.toLocaleString('pt-BR')}`
+                  {financeiro.despesa !== null
+                    ? `R$ ${financeiro.despesa.toLocaleString('pt-BR')}`
                     : <EmptyValue />}
                 </div>
               </div>
               <div className={styles.financeStat} style={{ gridColumn: '1 / -1' }}>
                 <div className={styles.financeStatLabel}>Saldo estimado</div>
                 <div className={styles.financeStatValue}>
-                  {FINANCEIRO.saldo !== null
-                    ? `R$ ${FINANCEIRO.saldo.toLocaleString('pt-BR')}`
+                  {financeiro.saldo !== null
+                    ? `R$ ${financeiro.saldo.toLocaleString('pt-BR')}`
                     : <EmptyValue />}
                 </div>
               </div>
@@ -290,12 +336,12 @@ function PropertyHome() {
             <div className={styles.financeBar}>
               <div
                 className={styles.financeBarFill}
-                style={{ width: `${FINANCEIRO.percentualMeta}%` }}
+                style={{ width: `${financeiro.percentualMeta}%` }}
               />
             </div>
             <div className={styles.financeBarLabel}>
               <span>Meta do mês</span>
-              <span>{FINANCEIRO.percentualMeta}%</span>
+              <span>{financeiro.percentualMeta}%</span>
             </div>
 
             {/* Slot de gráfico financeiro */}
@@ -306,18 +352,7 @@ function PropertyHome() {
       </main>
 
       {/* ── Bottom Nav ── */}
-      <nav className={styles.bottomNav}>
-        {NAV_ITEMS.map(item => (
-          <button
-            key={item.key}
-            className={`${styles.navItem} ${activeTab === item.key ? styles.active : ''}`}
-            onClick={() => handleNav(item.key)}
-          >
-            <span className={styles.navIcon}>{item.icone}</span>
-            <span className={styles.navLabel}>{item.label}</span>
-          </button>
-        ))}
-      </nav>
+      <PropertyNav activeTab={activeTab} onNav={handleNav} />
 
     </div>
   )
