@@ -1,4 +1,4 @@
-v# Propriedade Inteligente
+# Propriedade Inteligente
 
 > Sistema mobile de controle de rebanho para produtores rurais.
 > Gestão individual de animais com foco em pecuária de precisão acessível.
