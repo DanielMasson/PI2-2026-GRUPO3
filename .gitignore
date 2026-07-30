@@ -1,5 +1,37 @@
-node_modules
-dist
+# deps
+node_modules/
+
+# builds
+dist/
+www/
+
+# Cordova gerado
+platforms/android/.gradle/
+platforms/android/build/
+platforms/android/app/build/
+platforms/android/local.properties
+platforms/android/.idea/
+plugins/
+platforms/
+public/
+typings/
+
+# Firebase
 .env
 .env.local
 *.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.openclaude
+.idea/
+*.swp
+
+# SQLite runtime artifacts
+*.db
+*.sqlite
+*.sqlite3
