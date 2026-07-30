@@ -1,0 +1,559 @@
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #0f1a0f;
+  font-family: var(--font-family);
+}
+
+.inner {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + 80px);
+}
+
+/* ─── Topbar ──────────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #1a241a;
+  padding: var(--space-md) var(--space-lg);
+  padding-top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.backBtn {
+  background: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #f0ecff;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.backBtn:hover {
+  border-color: #c8a97e;
+  background-color: rgba(200, 169, 126, 0.1);
+}
+
+.pageTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  line-height: 1.2;
+}
+
+.pageSubtitle {
+  font-size: 11px;
+  color: #9b92b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ─── Header da seção ────────────────────────────────────────────────────── */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+}
+
+.addBtn {
+  background: rgba(200, 169, 126, 0.15);
+  border: 1px solid rgba(200, 169, 126, 0.3);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  font-family: var(--font-family);
+  color: #c8a97e;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.addBtn:hover { background-color: rgba(200, 169, 126, 0.25); }
+
+/* ─── Cards de gestação ──────────────────────────────────────────────────── */
+.gestacoesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.gestacaoCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 4px solid transparent;
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.gestacaoCard.gestante   { border-left-color: #4e8a1a; }
+.gestacaoCard.preParto   { border-left-color: #e67e22; }
+.gestacaoCard.partoProximo { border-left-color: #f39c12; }
+.gestacaoCard.atrasada   { border-left-color: #c0392b; }
+.gestacaoCard.parida     { border-left-color: #3498db; }
+.gestacaoCard.falhou     { border-left-color: #c84a4a; opacity: 0.85; }
+
+.gestacaoHeader {
+  padding: var(--space-lg);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.gestacaoInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.gestacaoAnimal {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+}
+
+.gestacaoMeta {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.gestacaoMeta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metaSep {
+  color: rgba(155, 146, 184, 0.4);
+}
+
+.gestacaoRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.diasBadge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.diasBadge.gestante     { background-color: rgba(78,138,26,0.2); color: #82c341; }
+.diasBadge.preParto     { background-color: rgba(230,126,34,0.2); color: #e67e22; }
+.diasBadge.partoProximo { background-color: rgba(243,156,18,0.2); color: #f39c12; }
+.diasBadge.atrasada     { background-color: rgba(192,57,43,0.2); color: #e74c3c; }
+.diasBadge.parida       { background-color: rgba(52,152,219,0.2); color: #3498db; }
+.diasBadge.falhou       { background-color: rgba(200,74,74,0.2); color: #c84a4a; }
+
+.statusLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statusLabel.gestante     { color: #82c341; }
+.statusLabel.preParto     { color: #e67e22; }
+.statusLabel.partoProximo { color: #f39c12; }
+.statusLabel.atrasada     { color: #e74c3c; }
+.statusLabel.parida       { color: #3498db; }
+.statusLabel.falhou       { color: #c84a4a; }
+
+.gestacaoCard.falhou {
+  border-left-color: #c84a4a;
+  opacity: 0.85;
+}
+.gestacaoCard.falhou .diasBadge.falhou {
+  background-color: rgba(200, 74, 74, 0.18);
+  color: #c84a4a;
+}
+
+.actionBtn.danger {
+  background-color: rgba(200, 74, 74, 0.12);
+  border-color: rgba(200, 74, 74, 0.35);
+  color: #e57373;
+}
+.actionBtn.danger:hover {
+  background-color: rgba(200, 74, 74, 0.22);
+}
+
+.badgeParida {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(52, 152, 219, 0.18);
+  color: #3498db;
+  border: 1px solid rgba(52, 152, 219, 0.45);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.badgeFalha {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(200, 74, 74, 0.18);
+  color: #c84a4a;
+  border: 1px solid rgba(200, 74, 74, 0.45);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.statusLabel.falhou       { color: #c84a4a; }
+
+/* ─── Barra de progresso ─────────────────────────────────────────────────── */
+.progressSection {
+  padding: 0 var(--space-lg);
+  padding-bottom: var(--space-md);
+}
+
+.progressLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.progressBar {
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  background: linear-gradient(90deg, #4e8a1a, #82c341);
+}
+
+.progressFill.preParto {
+  background: linear-gradient(90deg, #4e8a1a, #e67e22);
+}
+
+.progressFill.partoProximo {
+  background: linear-gradient(90deg, #4e8a1a, #f39c12);
+}
+
+.progressFill.atrasada {
+  background: linear-gradient(90deg, #c0392b, #e74c3c);
+}
+.progressFill.falhou {
+  background: linear-gradient(90deg, #c84a4a, #e08383);
+}
+
+/* ─── Ações do card ──────────────────────────────────────────────────────── */
+.gestacaoActions {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+}
+
+.actionBtn {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: #f0ecff;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.actionBtn:hover {
+  border-color: #c8a97e;
+  background-color: rgba(200, 169, 126, 0.1);
+}
+
+.actionBtn.primary {
+  background-color: rgba(200, 169, 126, 0.15);
+  border-color: rgba(200, 169, 126, 0.3);
+  color: #c8a97e;
+}
+
+.actionBtn.primary:hover {
+  background-color: rgba(200, 169, 126, 0.25);
+}
+
+/* Sprint 7: botão de falha (tri-state negativa) — vermelho discreto */
+.actionBtn.danger {
+  background-color: rgba(200, 74, 74, 0.1);
+  border-color: rgba(200, 74, 74, 0.35);
+  color: #e08383;
+}
+
+.actionBtn.danger:hover {
+  background-color: rgba(200, 74, 74, 0.22);
+  border-color: rgba(200, 74, 74, 0.6);
+}
+
+/* ─── Formulário ─────────────────────────────────────────────────────────── */
+.formCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.formTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  margin-bottom: var(--space-lg);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.formGridFull {
+  grid-column: 1 / -1;
+}
+
+.selectLabel {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.select {
+  width: 100%;
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  color: #f0ecff;
+  font-size: var(--font-size-md);
+  min-height: 48px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239b92b8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  font-family: var(--font-family);
+  transition: border-color var(--transition-fast);
+}
+
+.select:focus { border-color: #c8a97e; }
+.select option { background-color: #1a241a; }
+.selectError { border-color: var(--color-error) !important; }
+
+.textarea {
+  width: 100%;
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  color: #f0ecff;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family);
+  resize: vertical;
+  outline: none;
+  transition: border-color var(--transition-fast);
+  line-height: 1.5;
+  min-height: 80px;
+}
+
+.textarea:focus { border-color: #c8a97e; }
+.textarea::placeholder { color: rgba(155, 146, 184, 0.5); }
+
+.errorMsg {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  margin-top: 2px;
+  display: block;
+}
+
+.formActions {
+  margin-top: var(--space-lg);
+  display: flex;
+  gap: var(--space-md);
+}
+
+.formActions > * { flex: 1; }
+
+/* ─── Empty state ────────────────────────────────────────────────────────── */
+.emptyState {
+  text-align: center;
+  padding: var(--space-xl);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+  border: 1.5px dashed rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Cobertura em Observação ───────────────────────────────────────────── */
+.coberturaSection {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(200, 169, 126, 0.3);
+}
+
+.coberturaObs {
+  color: #9b92b8;
+  font-size: 12px;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.badgeAguardando {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(230, 126, 34, 0.18);
+  color: #e67e22;
+  border: 1px solid rgba(230, 126, 34, 0.45);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* Sprint 7: badge histórico parto */
+.badgeParida {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(52, 152, 219, 0.18);
+  color: #3498db;
+  border: 1px solid rgba(52, 152, 219, 0.45);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* Sprint 7: badge histórico falha */
+.badgeFalha {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(200, 74, 74, 0.18);
+  color: #c84a4a;
+  border: 1px solid rgba(200, 74, 74, 0.45);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ─── Success toast ──────────────────────────────────────────────────────── */
+.successToast {
+  background-color: rgba(78, 138, 26, 0.15);
+  border: 1px solid rgba(78, 138, 26, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #82c341;
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+/* ─── Detalhes expandidos ────────────────────────────────────────────────── */
+.detalhesSection {
+  padding: 0 var(--space-lg) var(--space-md);
+}
+
+.detalhesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.detalheItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detalheLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.detalheValor {
+  font-size: var(--font-size-sm);
+  color: #f0ecff;
+  font-weight: 500;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .formGrid { grid-template-columns: 1fr; }
+  .formGridFull { grid-column: 1; }
+  .detalhesGrid { grid-template-columns: 1fr; }
+  .gestacaoActions { flex-direction: column; }
+  .actionBtn { min-width: 100%; }
+}

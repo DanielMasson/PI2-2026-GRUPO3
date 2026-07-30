@@ -1,0 +1,331 @@
+/* ── Layout principal ── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #0f1a0f;
+  font-family: var(--font-family);
+}
+
+/* ── Topbar (estilo PropertyHome) ── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #1a241a;
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.backBtn {
+  background: none;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f0ecff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.backBtn:hover {
+  border-color: #c8a97e;
+  background-color: rgba(200,169,126,0.1);
+}
+
+.topbarTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  line-height: 1.2;
+}
+
+.topbarSub {
+  font-size: 11px;
+  color: #9b92b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.topbarActions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.iconBtn {
+  background: rgba(255,255,255,0.06);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: #9b92b8;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background: rgba(255,255,255,0.12);
+  color: #f0ecff;
+}
+
+/* ── Scroll area ── */
+.scrollArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md);
+  padding-bottom: 96px;
+}
+
+/* ── Seções ── */
+.sectionTitle {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-md);
+}
+
+/* ── Formulário ── */
+.formSection {
+  background: #1a241a;
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.formSection .sectionTitle {
+  color: #f0ecff;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.formGridFull {
+  grid-column: 1 / -1;
+}
+
+.formActions {
+  margin-top: var(--space-lg);
+  display: flex;
+  gap: var(--space-md);
+}
+
+.formActions > * {
+  flex: 1;
+}
+
+.successToast {
+  background-color: rgba(30, 160, 90, 0.15);
+  border: 1px solid rgba(30, 160, 90, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #1ea05a;
+  text-align: center;
+  margin-top: var(--space-md);
+}
+
+/* ── Select estilizado (tema escuro) ── */
+.selectWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.selectLabel {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+  font-weight: 500;
+}
+
+.select {
+  width: 100%;
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  color: #f0ecff;
+  font-size: var(--font-size-md);
+  min-height: 48px;
+  transition: border-color var(--transition-fast);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239b92b8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.select:focus {
+  border-color: #c8a97e;
+}
+
+.select option {
+  background-color: #1a241a;
+}
+
+.selectError {
+  border-color: var(--color-error);
+}
+
+.errorMsg {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+}
+
+/* ── Lista de animais ── */
+.listSection {
+  margin-bottom: var(--space-lg);
+}
+
+.listHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-md);
+  height: 36px;
+  flex: 1;
+  max-width: 200px;
+}
+
+.searchIcon {
+  display: flex;
+  align-items: center;
+  color: #9b92b8;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: var(--font-size-sm);
+  color: #f0ecff;
+  width: 100%;
+}
+
+.searchInput::placeholder {
+  color: rgba(155, 146, 184, 0.5);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-xl);
+  border: 1.5px dashed rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.animalList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* ── Card de animal (alto contraste) ── */
+.animalCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.animalCardLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.animalIcon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.animalInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.animalName {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+}
+
+.animalMeta {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+}
+
+.animalTag {
+  background: rgba(200,169,126,0.15);
+  color: #c8a97e;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+/* ── Responsivo ── */
+@media (max-width: 560px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formGridFull {
+    grid-column: 1;
+  }
+
+  .listHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchWrapper {
+    max-width: 100%;
+  }
+}

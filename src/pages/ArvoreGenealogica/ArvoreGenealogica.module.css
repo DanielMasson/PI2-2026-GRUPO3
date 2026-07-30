@@ -1,0 +1,514 @@
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #0f1a0f;
+  font-family: var(--font-family);
+}
+
+.inner {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + 80px);
+}
+
+/* ─── Topbar ──────────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #1a241a;
+  padding: var(--space-md) var(--space-lg);
+  padding-top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.backBtn {
+  background: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #f0ecff;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.backBtn:hover {
+  border-color: #c8a97e;
+  background-color: rgba(200, 169, 126, 0.1);
+}
+
+.pageTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  line-height: 1.2;
+}
+
+.pageSubtitle {
+  font-size: 11px;
+  color: #9b92b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ─── Árvore ──────────────────────────────────────────────────────────────── */
+.treeWrapper {
+  display: flex;
+  justify-content: center;
+  min-width: fit-content;
+  padding: var(--space-md);
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* ─── Linha/geração ──────────────────────────────────────────────────────── */
+.geracao {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-lg);
+  position: relative;
+}
+
+.geracaoAvos {
+  gap: var(--space-xl);
+}
+
+.geracaoPais {
+  gap: var(--space-2xl);
+}
+
+.geracaoAnimal {
+  gap: 0;
+}
+
+.geracaoFilhos {
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  max-width: 600px;
+}
+
+/* ─── Conectores verticais ────────────────────────────────────────────────── */
+.conectorVertical {
+  display: flex;
+  justify-content: center;
+  height: 32px;
+  position: relative;
+}
+
+.conectorVertical::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1.5px;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(-50%);
+}
+
+/* Conector que divide em dois (para pais) */
+.conectorDivisor {
+  display: flex;
+  justify-content: center;
+  height: 32px;
+  position: relative;
+}
+
+.conectorDivisor::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 50%;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-right: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0 0 0 0;
+}
+
+.conectorDivisor .pernaEsquerda,
+.conectorDivisor .pernaDireita {
+  position: absolute;
+  bottom: 0;
+  width: 1.5px;
+  height: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.conectorDivisor .pernaEsquerda {
+  left: 25%;
+}
+
+.conectorDivisor .pernaDireita {
+  right: 25%;
+}
+
+/* Conector que junta de dois (para filhos) */
+.conectorJuntor {
+  display: flex;
+  justify-content: center;
+  height: 32px;
+  position: relative;
+}
+
+.conectorJuntor::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.5px;
+  height: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(-50%);
+}
+
+/* ─── Nó do animal ───────────────────────────────────────────────────────── */
+.no {
+  background-color: #1a241a;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  min-width: 120px;
+  max-width: 160px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+  position: relative;
+}
+
+.no:hover {
+  border-color: rgba(200, 169, 126, 0.4);
+  background-color: rgba(200, 169, 126, 0.05);
+  transform: translateY(-2px);
+}
+
+.noSelecionado {
+  border-color: #c8a97e;
+  background-color: rgba(200, 169, 126, 0.1);
+  box-shadow: 0 0 12px rgba(200, 169, 126, 0.15);
+}
+
+.noSelecionado:hover {
+  border-color: #c8a97e;
+}
+
+.noDesconhecido {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.1);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.noDesconhecido:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: transparent;
+  transform: none;
+}
+
+.noIcone {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+
+.noNome {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #f0ecff;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.noBrinco {
+  font-size: 11px;
+  color: #9b92b8;
+  margin-top: 2px;
+}
+
+.noRaca {
+  font-size: 10px;
+  color: rgba(155, 146, 184, 0.6);
+  margin-top: 1px;
+}
+
+.noMacho {
+  border-color: rgba(91, 155, 213, 0.25);
+}
+
+.noFemea {
+  border-color: rgba(232, 140, 165, 0.25);
+}
+
+.noMacho .noIcone { color: #5b9bd5; }
+.noFemea .noIcone { color: #e88ca5; }
+
+/* ─── Legenda ────────────────────────────────────────────────────────────── */
+.legenda {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.legendaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 12px;
+  color: #9b92b8;
+}
+
+.legendaCor {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legendaCor.macho { background-color: rgba(91, 155, 213, 0.3); border: 1px solid #5b9bd5; }
+.legendaCor.femea { background-color: rgba(232, 140, 165, 0.3); border: 1px solid #e88ca5; }
+.legendaCor.selecionado { background-color: rgba(200, 169, 126, 0.2); border: 1px solid #c8a97e; }
+.legendaCor.desconhecido { background-color: transparent; border: 1.5px dashed rgba(255,255,255,0.15); }
+
+/* ─── Info do animal selecionado ─────────────────────────────────────────── */
+.animalInfo {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: var(--space-lg);
+  margin-top: var(--space-xl);
+  max-width: 400px;
+  width: 100%;
+  align-self: center;
+}
+
+.animalInfoTitle,
+.animalInfoTitulo {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  margin-bottom: var(--space-md);
+}
+
+.animalInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.animalInfoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.animalInfoLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.animalInfoValor {
+  font-size: var(--font-size-sm);
+  color: #f0ecff;
+  font-weight: 500;
+}
+
+/* ─── Linhas de conexão (avós / pais / filhos) ───────────────────────────── */
+.linhaAvos,
+.linhaPais {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avosLabel,
+.paisLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-xs);
+}
+
+.avosPar,
+.paisPar {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.avosLado {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.avosPlaceholder {
+  min-width: 120px;
+  max-width: 160px;
+}
+
+.conectorAvosPais {
+  display: flex;
+  justify-content: center;
+  height: 32px;
+  position: relative;
+}
+
+.conectorAvosPais::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1.5px;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(-50%);
+}
+
+.conectorPaisAnimal {
+  display: flex;
+  justify-content: center;
+  height: 32px;
+  position: relative;
+}
+
+.conectorPaisAnimal::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1.5px;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(-50%);
+}
+
+.linhaFilhos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.conectorAnimalFilhos {
+  display: flex;
+  justify-content: center;
+  height: 32px;
+  position: relative;
+}
+
+.conectorAnimalFilhos::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1.5px;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(-50%);
+}
+
+.filhosLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-xs);
+}
+
+.filhosLista {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 600px;
+}
+
+.animalLink {
+  color: #c8a97e;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.animalLink:hover {
+  text-decoration: underline;
+}
+
+/* ─── Loading / Error states ────────────────────────────────────────────── */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+  gap: var(--space-sm);
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl);
+  color: #e88ca5;
+  font-size: var(--font-size-sm);
+  gap: var(--space-sm);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .treeWrapper {
+    justify-content: flex-start;
+  }
+
+  .geracao {
+    gap: var(--space-sm);
+  }
+
+  .geracaoAvos {
+    gap: var(--space-md);
+  }
+
+  .geracaoPais {
+    gap: var(--space-lg);
+  }
+
+  .no {
+    min-width: 90px;
+    max-width: 120px;
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .noIcone { font-size: 16px; }
+  .noNome { font-size: 12px; }
+  .noBrinco { font-size: 10px; }
+}

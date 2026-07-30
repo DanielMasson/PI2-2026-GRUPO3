@@ -1,0 +1,106 @@
+/* ─── BottomNav ─────────────────────────────────────────────────────────── */
+/* Otimizado para toque fácil (produtores rurais) */
+
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background-color: #1a241a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 var(--space-md);
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ─── Tab genérico ─── */
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9b92b8;
+  padding: var(--space-sm) 0;
+  transition: color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  min-height: 48px;
+  position: relative;
+}
+
+.tab:hover {
+  color: #f0ecff;
+}
+
+.tabActive {
+  color: #82c341;
+}
+
+.tabActive::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 3px;
+  background-color: #82c341;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.tabIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-size: 26px;
+}
+
+.tabLabel {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ─── Botão central + ─── */
+.addWrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.addBtn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #82c341;
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(78, 138, 26, 0.4);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addBtn:hover {
+  background-color: #6ba832;
+  box-shadow: 0 6px 20px rgba(78, 138, 26, 0.5);
+}
+
+.addBtn:active {
+  transform: scale(0.93);
+}
