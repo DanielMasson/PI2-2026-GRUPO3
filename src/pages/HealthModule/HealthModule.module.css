@@ -540,3 +540,85 @@
 @media (max-width: 560px) {
   .dashGrid { grid-template-columns: 1fr; }
 }
+
+/* ─── Dashboard cards (S6) ─── */
+.dashboardCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+@media (max-width: 600px) {
+  .dashboardCards { grid-template-columns: 1fr; }
+}
+
+.bannerAbate {
+  background-color: #3f1f0e;
+  border-left: 4px solid #f59e0b;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  color: #fde68a;
+}
+
+.bannerAbate ul {
+  margin: var(--space-sm) 0 0 0;
+  padding-left: var(--space-md);
+}
+
+.subtitulo {
+  margin: 0 0 var(--space-md) 0;
+  font-size: var(--font-size-lg);
+  color: #ffffff;
+}
+
+.cardsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.cardAnimalDesempenho {
+  padding: var(--space-md);
+  background-color: #1a2e1a;
+  border: 1px solid #2d4a2d;
+  border-radius: var(--radius-md);
+}
+
+.cardAnimalHeader {
+  font-size: var(--font-size-md);
+  color: #ffffff;
+  margin-bottom: var(--space-sm);
+}
+
+.desempenhoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #d1d5db;
+}
+
+.desempenhoGrid strong {
+  color: #ffffff;
+}
+
+@media (max-width: 600px) {
+  .desempenhoGrid { grid-template-columns: 1fr; }
+}
+
+.ordenhaDetalhes {
+  margin-top: var(--space-sm);
+}
+
+.ordenhaSumario {
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: var(--font-size-sm);
+  padding: 6px 0;
+}
+
+.ordenhaSumario:hover {
+  color: #22c55e;
+}

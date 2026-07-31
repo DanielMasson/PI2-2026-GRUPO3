@@ -1,0 +1,169 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.mesTitulo {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: capitalize;
+}
+
+.navBtn {
+  width: 44px;
+  height: 44px;
+  background-color: #1a2e1a;
+  color: #ffffff;
+  border: 1px solid #2d4a2d;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+}
+
+.navBtn:hover {
+  border-color: #22c55e;
+}
+
+.controles {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btnHoje {
+  padding: 6px 14px;
+  background-color: transparent;
+  color: #22c55e;
+  border: 1px solid #22c55e;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  min-height: 36px;
+}
+
+.resumo {
+  font-size: var(--font-size-sm);
+  color: #9ca3af;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.diaSemana {
+  text-align: center;
+  padding: 6px 0;
+  font-size: var(--font-size-xs);
+  color: #9ca3af;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.dia, .diaVazio {
+  aspect-ratio: 1;
+  background-color: #1a2e1a;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.diaVazio {
+  background-color: transparent;
+}
+
+.diaHoje {
+  border: 2px solid #22c55e;
+}
+
+.diaComDose {
+  background-color: #233a23;
+}
+
+.diaNumero {
+  font-size: var(--font-size-sm);
+  color: #d1d5db;
+  font-weight: 600;
+}
+
+.diaHoje .diaNumero {
+  color: #22c55e;
+}
+
+.bolinhas {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.bolinha {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  color: #0f1a0f;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listaDoses {
+  margin-top: var(--space-md);
+}
+
+.listaTitulo {
+  font-size: var(--font-size-md);
+  color: #ffffff;
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.doseItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 8px 12px;
+  background-color: #1a2e1a;
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
+}
+
+.doseDia {
+  background-color: #22c55e;
+  color: #0f1a0f;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.doseInfo {
+  font-size: var(--font-size-sm);
+  color: #d1d5db;
+}
+
+.empty {
+  text-align: center;
+  padding: var(--space-xl);
+  color: #9ca3af;
+  font-style: italic;
+}

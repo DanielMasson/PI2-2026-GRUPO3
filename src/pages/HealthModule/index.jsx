@@ -8,11 +8,15 @@ import { useMovimentacoes } from '../../hooks/useMovimentacoes'
 import { useVacinasObrigatorias } from '../../hooks/useVacinasObrigatorias'
 import { useDashboardStats } from '../../hooks/useDashboardStats'
 import { useAlertasSanitarios } from '../../hooks/useAlertasSanitarios'
+import { usePesagens } from '../../hooks/usePesagens'
 import { TIPOS_MEDICAMENTO, RESULTADOS_OCORRENCIA } from '../../constants/sync'
 import { diasAte } from '../../utils/datas'
 import styles from './HealthModule.module.css'
 import Button from '../../components/Button/index.jsx'
 import Input from '../../components/Input/index.jsx'
+import VacinasObrigatoriasForm from '../../components/VacinasObrigatoriasForm/index.jsx'
+import CalendarioVacinas from '../../components/CalendarioVacinas/index.jsx'
+import OrdenhaForm from '../../components/OrdenhaForm/index.jsx'
 import * as movimentacoesService from '../../services/movimentacaoService'
 
 function formatarData(dataStr) {
@@ -49,8 +53,12 @@ function HealthModule() {
   const [searchParams] = useSearchParams()
   const [abaAtiva, setAbaAtiva] = useState(() => {
     const aba = searchParams.get('aba')
-    return ['vacinas', 'medicamentos', 'ocorrencias', 'localizacao'].includes(aba) ? aba : 'vacinas'
+    return ['vacinas', 'medicamentos', 'ocorrencias', 'localizacao', 'desempenho', 'calendario', 'config'].includes(aba) ? aba : 'vacinas'
   })
+
+  // Dashboard stats — montado acima das abas para visão geral
+  const { proximas: proximasVacinas, vencidas: vencidasVacinas } = useVacinas(propriedadeId, 'propriedade')
+  const stats = useDashboardStats(propriedadeId, { proximas: proximasVacinas || [], vencidas: vencidasVacinas || [] })
   const animalParam = searchParams.get('animal') || ''
 
   return (
@@ -65,13 +73,32 @@ function HealthModule() {
       </header>
 
       <div className={styles.inner}>
+        {/* Cards de visão geral */}
+        <div className={styles.dashboardCards}>
+          <div className={styles.dashCard}>
+            <span className={styles.dashCardValue}>{stats.proximasVacinas}</span>
+            <span className={styles.dashCardLabel}>Vacinas próximas/vencidas</span>
+          </div>
+          <div className={styles.dashCard}>
+            <span className={styles.dashCardValue}>{stats.gestantes}</span>
+            <span className={styles.dashCardLabel}>Gestantes</span>
+          </div>
+          <div className={styles.dashCard}>
+            <span className={styles.dashCardValue}>{stats.movimentacoesRecentes}</span>
+            <span className={styles.dashCardLabel}>Movimentações (7d)</span>
+          </div>
+        </div>
+
         {/* Abas */}
         <div className={styles.tabs}>
           {[
             { id: 'vacinas', label: 'Vacinas', icon: '💉' },
             { id: 'medicamentos', label: 'Medicamentos', icon: '💊' },
             { id: 'ocorrencias', label: 'Ocorrências', icon: '🩺' },
+            { id: 'desempenho', label: 'Desempenho', icon: '⚖️' },
+            { id: 'calendario', label: 'Calendário', icon: '📅' },
             { id: 'localizacao', label: 'Localização', icon: '📍' },
+            { id: 'config', label: 'Config', icon: '⚙️' },
           ].map(aba => (
             <button
               key={aba.id}
@@ -89,6 +116,9 @@ function HealthModule() {
         {abaAtiva === 'medicamentos' && <AbaMedicamentos propriedadeId={propriedadeId} animalPreSelecionado={animalParam} />}
         {abaAtiva === 'ocorrencias' && <AbaOcorrencias propriedadeId={propriedadeId} animalPreSelecionado={animalParam} />}
         {abaAtiva === 'localizacao' && <AbaLocalizacao propriedadeId={propriedadeId} animalPreSelecionado={animalParam} />}
+        {abaAtiva === 'desempenho' && <AbaDesempenho propriedadeId={propriedadeId} />}
+        {abaAtiva === 'calendario' && <AbaCalendario propriedadeId={propriedadeId} />}
+        {abaAtiva === 'config' && <AbaConfig propriedadeId={propriedadeId} />}
       </div>
     </div>
   )
@@ -972,6 +1002,101 @@ function AbaLocalizacao({ propriedadeId, animalPreSelecionado }) {
       )}
 
       {sucesso && <p className={styles.successToast}>✓ Movimentação registrada!</p>}
+    </div>
+  )
+}
+
+// ─── ABA DESEMPENHO ─────────────────────────────────────────────────────────
+function AbaDesempenho({ propriedadeId }) {
+  const { animais, carregando: carregandoAnimais } = useAnimais(propriedadeId)
+  const femeas = animais.filter(a => a.sexo === 'femea' && a.status === 'ativo')
+
+  if (carregandoAnimais) {
+    return <div className={styles.empty}>Carregando...</div>
+  }
+
+  const comPesoAbate = animais.filter(a => a.peso_abate_estimado)
+
+  return (
+    <div>
+      {comPesoAbate.length > 0 && (
+        <div className={styles.bannerAbate}>
+          <strong>🔪 Contagem regressiva para abate</strong>
+          <ul>
+            {comPesoAbate.map(a => {
+              const pesoAtual = a.peso_atual || a.peso_inicial
+              const falta = a.peso_abate_estimado - (pesoAtual || 0)
+              return (
+                <li key={a.uuid}>
+                  {a.nome} ({a.id_fisico || a.id_interno || 's/brinco'}): {falta > 0 ? `faltam ${falta.toFixed(1)} kg` : 'pronto para abate'}
+                  {a.data_abate_estimada && (
+                    <span> · data estimada: {formatarData(a.data_abate_estimada)}</span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+
+      <h3 className={styles.subtitulo}>Fêmeas com pesagem e GMD</h3>
+      {femeas.length === 0 ? (
+        <div className={styles.empty}>Nenhuma fêmea ativa na propriedade.</div>
+      ) : (
+        <div className={styles.cardsList}>
+          {femeas.slice(0, 30).map(a => <CardAnimalDesempenho key={a.uuid} animal={a} propriedadeId={propriedadeId} />)}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CardAnimalDesempenho({ animal, propriedadeId }) {
+  return (
+    <div className={styles.cardAnimalDesempenho}>
+      <div className={styles.cardAnimalHeader}>
+        <strong>{animal.nome}</strong> ({animal.id_fisico || animal.id_interno || 's/brinco'})
+      </div>
+      <PesagensAnimalResumo animalUuid={animal.uuid} />
+      {animal.sexo === 'femea' && animal.status === 'ativo' && (
+        <details className={styles.ordenhaDetalhes}>
+          <summary className={styles.ordenhaSumario}>Ordenhas / Produção de leite</summary>
+          <OrdenhaForm animalUuid={animal.uuid} propriedadeUuid={propriedadeId} />
+        </details>
+      )}
+    </div>
+  )
+}
+
+function PesagensAnimalResumo({ animalUuid }) {
+  const { pesoAtual, gmd, ecc, carregando } = usePesagens(animalUuid)
+  if (carregando) return <span style={{ color: '#9ca3af' }}>...</span>
+  const corGmd = gmd.cor === 'vermelho' ? '#ef4444' : gmd.cor === 'amarelo' ? '#f59e0b' : '#22c55e'
+  return (
+    <div className={styles.desempenhoGrid}>
+      <span>Peso atual: <strong>{pesoAtual ? `${pesoAtual} kg` : '—'}</strong></span>
+      <span>GMD: <strong style={{ color: corGmd }}>{gmd.valor ? `${gmd.valor.toFixed(2)} kg/dia` : '—'}</strong></span>
+      <span>ECC: <strong>{ecc.valor || '—'} {ecc.label ? `(${ecc.label})` : ''}</strong></span>
+    </div>
+  )
+}
+
+// ─── ABA CALENDÁRIO ─────────────────────────────────────────────────────────
+function AbaCalendario({ propriedadeId }) {
+  return (
+    <div>
+      <h3 className={styles.subtitulo}>Calendário mensal de vacinas</h3>
+      <CalendarioVacinas propriedadeUuid={propriedadeId} />
+    </div>
+  )
+}
+
+// ─── ABA CONFIG ─────────────────────────────────────────────────────────────
+function AbaConfig({ propriedadeId }) {
+  return (
+    <div>
+      <h3 className={styles.subtitulo}>Configurações sanitárias</h3>
+      <VacinasObrigatoriasForm propriedadeUuid={propriedadeId} />
     </div>
   )
 }

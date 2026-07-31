@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAnimais } from '../../hooks/useAnimais'
+import { useProducaoLeitePropriedade } from '../../hooks/useProducaoLeite'
+import * as producaoLeiteService from '../../services/producaoLeiteService'
 import PropertyNav from '../../components/PropertyNav/index.jsx'
 import styles from './ProducaoLeite.module.css'
-
-// Produção de leite: tabela producao_leite é pós-MVP
-// Por enquanto, usamos animais reais do banco mas registros ficam em state local
 
 function formatarData(data) {
  return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR')
@@ -36,9 +35,12 @@ function ProducaoLeite() {
  const navigate = useNavigate()
  const { propriedadeId } = useParams()
  const { animais, carregando } = useAnimais(propriedadeId)
+ const { ordenhas, resumo, carregar: carregarOrdenhas } = useProducaoLeitePropriedade(propriedadeId)
  const [data, setData] = useState(new Date().toISOString().split('T')[0])
  const [registros, setRegistros] = useState({})
  const [sucesso, setSucesso] = useState('')
+ const [erro, setErro] = useState('')
+ const [salvando, setSalvando] = useState(false)
  const [activeTab, setActiveTab] = useState('leite')
 
  // Filtrar apenas fêmeas bovinas (vacas em lactação — simplificação MVP)
@@ -62,7 +64,7 @@ function ProducaoLeite() {
   return manha + tarde
  }
 
- function handleSalvar() {
+ async function handleSalvar() {
   const semOrdenha = vacasLactantes.filter(v => {
    const r = registros[v.uuid] || {}
    return !r.manha && !r.tarde
@@ -73,9 +75,39 @@ function ProducaoLeite() {
    return
   }
 
-  // Pós-MVP: salvar no banco (tabela producao_leite)
-  setSucesso('Registros salvos com sucesso!')
-  setTimeout(() => setSucesso(''), 3000)
+  setSalvando(true)
+  setErro('')
+  try {
+   const pendentes = vacasLactantes
+    .map(v => {
+     const r = registros[v.uuid] || {}
+     const manha = parseFloat(r.manha) || 0
+     const tarde = parseFloat(r.tarde) || 0
+     if (manha === 0 && tarde === 0) return null
+     return {
+      animal_uuid: v.uuid,
+      propriedade_uuid: propriedadeId,
+      data,
+      manha_litros: manha,
+      tarde_litros: tarde,
+      observacao: r.observacao || null,
+     }
+    })
+    .filter(Boolean)
+
+   for (const p of pendentes) {
+    await producaoLeiteService.registrarOrdenha(p)
+   }
+
+   setRegistros({})
+   await carregarOrdenhas()
+   setSucesso(`${pendentes.length} ordenha(s) salva(s)!`)
+   setTimeout(() => setSucesso(''), 3000)
+  } catch (e) {
+   setErro(e.message || String(e))
+  } finally {
+   setSalvando(false)
+  }
  }
 
  // Estatísticas
@@ -134,6 +166,7 @@ function ProducaoLeite() {
 
    <div className={styles.inner}>
     {sucesso && <div className={styles.successToast}>{sucesso}</div>}
+    {erro && <div className={styles.errorToast}>{erro}</div>}
 
     {/* Seletor de data */}
     <div className={styles.dataSelector}>
@@ -262,8 +295,8 @@ function ProducaoLeite() {
     </div>
 
     {/* Botão salvar */}
-    <button className={styles.salvarBtn} onClick={handleSalvar}>
-     Salvar registros
+    <button className={styles.salvarBtn} onClick={handleSalvar} disabled={salvando}>
+     {salvando ? 'Salvando...' : 'Salvar registros'}
     </button>
    </div>
    <PropertyNavWithRoute activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} propriedadeId={propriedadeId} />

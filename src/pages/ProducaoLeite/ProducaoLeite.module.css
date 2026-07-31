@@ -335,6 +335,17 @@
   margin-bottom: var(--space-md);
 }
 
+.errorToast {
+  background-color: rgba(192, 57, 43, 0.15);
+  border: 1px solid rgba(192, 57, 43, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #e74c3c;
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
 /* ─── Empty state ────────────────────────────────────────────────────────── */
 .emptyState {
   text-align: center;
