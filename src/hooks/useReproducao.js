@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import * as reproducaoService from '../services/reproducaoService'
 import { DIAS_GESTACAO, DIAS_SECAGEM } from '../constants/sync'
+import { calcularStatusGestacao, diasAteParto } from '../utils/reproducao'
 
 export function useReproducao(animalUuid) {
   const [registros, setRegistros] = useState([])
@@ -23,10 +24,10 @@ export function useReproducao(animalUuid) {
 
   useEffect(() => { carregar() }, [carregar])
 
-  const gestacaoAtiva = registros.find(r => !r.data_parto && r.prenhez_confirmada) || null
+  const gestacaoAtiva = registros.find(r => calcularStatusGestacao(r) === 'prenhez_confirmada') || null
 
   const diasRestantes = gestacaoAtiva
-    ? reproducaoService.diasAteParto(gestacaoAtiva.data_previa_parto)
+    ? diasAteParto(gestacaoAtiva.data_previa_parto)
     : null
 
   function statusGestacao() {

@@ -184,6 +184,37 @@ const SQL_TABELAS = [
     synced_at TEXT,
     sync_status TEXT DEFAULT 'novo'
   )`,
+
+  // ── 12. ci_os ── (Sprint 7: detecção de cio antes da cobertura)
+  `CREATE TABLE IF NOT EXISTS ci_os (
+    uuid TEXT PRIMARY KEY,
+    animal_uuid TEXT NOT NULL,
+    propriedade_uuid TEXT NOT NULL,
+    data TEXT NOT NULL,
+    sintomas TEXT,
+    intensidade TEXT,
+    observacao TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    synced_at TEXT,
+    sync_status TEXT DEFAULT 'novo'
+  )`,
+
+  // ── 13. producao_leite ── (Sprint 6/8: ordenhas)
+  `CREATE TABLE IF NOT EXISTS producao_leite (
+    uuid TEXT PRIMARY KEY,
+    animal_uuid TEXT NOT NULL,
+    propriedade_uuid TEXT NOT NULL,
+    data TEXT NOT NULL,
+    manha_litros REAL DEFAULT 0,
+    tarde_litros REAL DEFAULT 0,
+    ccs INTEGER,
+    observacao TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    synced_at TEXT,
+    sync_status TEXT DEFAULT 'novo'
+  )`,
 ]
 
 const SQL_INDEXES = [
@@ -247,6 +278,9 @@ const SQL_MIGRACOES = [
   // Backfill: registros pré-existentes precisam de resultado coerente.
   "UPDATE reproducao SET resultado = 'parida' WHERE data_parto IS NOT NULL AND (resultado IS NULL OR resultado = 'pendente')",
   "UPDATE reproducao SET resultado = 'positiva' WHERE prenhez_confirmada = 1 AND data_parto IS NULL AND (resultado IS NULL OR resultado = 'pendente')",
+  // Sprint 6: peso de abate estimado em animais (contagem regressiva no dashboard)
+  "ALTER TABLE animais ADD COLUMN peso_abate_estimado REAL",
+  "ALTER TABLE animais ADD COLUMN data_abate_estimada TEXT",
 ]
 
 function executarSqlSemErro(db, sql) {

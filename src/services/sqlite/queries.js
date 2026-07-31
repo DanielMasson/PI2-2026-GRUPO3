@@ -202,7 +202,7 @@ export async function atualizarAnimal(uuid, dados) {
   const campos = []
   const params = []
 
-  const editaveis = ['nome', 'id_interno', 'id_fisico', 'especie', 'raca', 'sexo', 'data_nascimento', 'peso_inicial', 'pelagem', 'genetica', 'origem', 'mae_uuid', 'pai_uuid', 'status']
+  const editaveis = ['nome', 'id_interno', 'id_fisico', 'especie', 'raca', 'sexo', 'data_nascimento', 'peso_inicial', 'pelagem', 'genetica', 'origem', 'mae_uuid', 'pai_uuid', 'status', 'peso_abate_estimado', 'data_abate_estimada']
   editaveis.forEach(campo => {
     if (dados[campo] !== undefined) {
       campos.push(`${campo} = ?`)
@@ -1285,6 +1285,112 @@ export async function listarVacinasFuturasPropriedade(propriedadeUuid) {
        AND date(v.proxima_dose) >= date('now')
        AND date(v.proxima_dose) <= date('now', '+7 days')
      ORDER BY v.proxima_dose ASC`,
+    [propriedadeUuid],
+  )
+  return rowsToArray(result)
+}
+
+// ─── CIOS (Sprint 7) ───
+
+export async function listarCios(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT c.*, a.nome AS nome_animal, a.id_fisico
+     FROM ci_os c
+     INNER JOIN animais a ON c.animal_uuid = a.uuid
+     WHERE c.propriedade_uuid = ? AND a.deleted = 0
+     ORDER BY c.data DESC`,
+    [propriedadeUuid],
+  )
+  return rowsToArray(result)
+}
+
+export async function inserirCio(dados) {
+  const db = getDb()
+  const uuid = dados.uuid || gerarUUID()
+  const timestamp = agora()
+  await executar(
+    db,
+    `INSERT INTO ci_os (uuid, animal_uuid, propriedade_uuid, data, sintomas, intensidade, observacao, created_at, updated_at, synced_at, sync_status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, null, 'novo')`,
+    [
+      uuid, dados.animal_uuid, dados.propriedade_uuid, dados.data,
+      dados.sintomas || null, dados.intensidade || null, dados.observacao || null,
+      timestamp, timestamp,
+    ],
+  )
+  return uuid
+}
+
+export async function excluirCio(uuid) {
+  const db = getDb()
+  await executar(db, 'DELETE FROM ci_os WHERE uuid = ?', [uuid])
+}
+
+// ─── PRODUÇÃO DE LEITE (Sprint 6) ───
+
+export async function listarProducaoLeite(animalUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    'SELECT * FROM producao_leite WHERE animal_uuid = ? ORDER BY data DESC',
+    [animalUuid],
+  )
+  return rowsToArray(result)
+}
+
+export async function listarProducaoLeitePropriedade(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT pl.*, a.nome AS nome_animal, a.id_fisico
+     FROM producao_leite pl
+     INNER JOIN animais a ON pl.animal_uuid = a.uuid
+     WHERE pl.propriedade_uuid = ? AND a.deleted = 0
+     ORDER BY pl.data DESC`,
+    [propriedadeUuid],
+  )
+  return rowsToArray(result)
+}
+
+export async function inserirProducaoLeite(dados) {
+  const db = getDb()
+  const uuid = dados.uuid || gerarUUID()
+  const timestamp = agora()
+  await executar(
+    db,
+    `INSERT INTO producao_leite (uuid, animal_uuid, propriedade_uuid, data, manha_litros, tarde_litros, ccs, observacao, created_at, updated_at, synced_at, sync_status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, 'novo')`,
+    [
+      uuid, dados.animal_uuid, dados.propriedade_uuid, dados.data,
+      dados.manha_litros || 0, dados.tarde_litros || 0,
+      dados.ccs || null, dados.observacao || null,
+      timestamp, timestamp,
+    ],
+  )
+  return uuid
+}
+
+export async function excluirProducaoLeite(uuid) {
+  const db = getDb()
+  await executar(db, 'DELETE FROM producao_leite WHERE uuid = ?', [uuid])
+}
+
+export async function buscarResumoProducaoLeite(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT pl.animal_uuid, a.nome AS nome_animal, a.id_fisico,
+            COUNT(pl.uuid) AS total_registros,
+            COALESCE(SUM(pl.manha_litros + pl.tarde_litros), 0) AS total_litros,
+            COALESCE(AVG(pl.manha_litros + pl.tarde_litros), 0) AS media_diaria,
+            MAX(pl.data) AS ultima_ordenha
+     FROM producao_leite pl
+     INNER JOIN animais a ON pl.animal_uuid = a.uuid
+     WHERE pl.propriedade_uuid = ? AND a.deleted = 0
+     GROUP BY pl.animal_uuid
+     ORDER BY ultima_ordenha DESC`,
     [propriedadeUuid],
   )
   return rowsToArray(result)
