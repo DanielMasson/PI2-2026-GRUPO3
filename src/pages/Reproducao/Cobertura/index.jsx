@@ -33,6 +33,30 @@ function Cobertura() {
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState('')
+  const [cancelandoUuid, setCancelandoUuid] = useState(null)
+  const [motivoCancelamento, setMotivoCancelamento] = useState('')
+
+  function abrirCancelar(uuid) {
+    setCancelandoUuid(uuid)
+    setMotivoCancelamento('')
+  }
+
+  async function handleConfirmarCancelamento(e) {
+    e.preventDefault()
+    if (!cancelandoUuid || !motivoCancelamento.trim()) return
+    setSalvando(true)
+    setErro('')
+    try {
+      await cancelarCobertura(cancelandoUuid, motivoCancelamento.trim())
+      setCancelandoUuid(null)
+      setSucesso('Cobertura cancelada.')
+      setTimeout(() => setSucesso(''), 3000)
+    } catch (err) {
+      setErro(err.message || String(err))
+    } finally {
+      setSalvando(false)
+    }
+  }
 
   const dataPrevistaCalculo = calcularDataPrevistaParto(form.data_cobertura)
   const dataSecagemCalculo = calcularDataSecagem(dataPrevistaCalculo)
@@ -69,13 +93,8 @@ function Cobertura() {
   }
 
   async function handleCancelar(uuid) {
-    const motivo = prompt('Motivo do cancelamento?')
-    if (!motivo) return
-    try {
-      await cancelarCobertura(uuid, motivo)
-    } catch (err) {
-      setErro(err.message || String(err))
-    }
+    // Mantido como fallback se chamado por outro fluxo; preferir abrirCancelar
+    await cancelarCobertura(uuid, 'Cancelamento solicitado')
   }
 
   return (
@@ -220,13 +239,37 @@ function Cobertura() {
                     </div>
                   </div>
                   {status !== 'parida' && status !== 'cancelada' && (
-                    <button
-                      type="button"
-                      className={styles.btnSecundario}
-                      onClick={() => handleCancelar(r.uuid)}
-                    >
-                      Cancelar
-                    </button>
+                    cancelandoUuid === r.uuid ? (
+                      <form className={styles.acaoInline} onSubmit={handleConfirmarCancelamento}>
+                        <label className={styles.label}>
+                          <span className={styles.acaoInlineLabel}>Motivo do cancelamento</span>
+                          <input
+                            type="text"
+                            className={styles.input}
+                            value={motivoCancelamento}
+                            onChange={e => setMotivoCancelamento(e.target.value)}
+                            placeholder="Ex: falha reprodutiva, erro de cadastro..."
+                            required
+                          />
+                        </label>
+                        <div className={styles.acaoInlineBotoes}>
+                          <button type="submit" className={styles.btnPrimario} disabled={salvando || !motivoCancelamento.trim()}>
+                            {salvando ? 'Cancelando...' : 'Confirmar cancelamento'}
+                          </button>
+                          <button type="button" className={styles.btnSecundario} onClick={() => setCancelandoUuid(null)}>
+                            Voltar
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.btnSecundario}
+                        onClick={() => abrirCancelar(r.uuid)}
+                      >
+                        Cancelar
+                      </button>
+                    )
                   )}
                 </div>
               )

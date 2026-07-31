@@ -28,6 +28,7 @@ function Cio() {
   const [salvando, setSalvando] = useState(false)
   const [sucesso, setSucesso] = useState('')
   const [erro, setErro] = useState('')
+  const [excluindoUuid, setExcluindoUuid] = useState(null)
 
   async function handleRegistrar(e) {
     e.preventDefault()
@@ -55,8 +56,20 @@ function Cio() {
   }
 
   async function handleExcluir(uuid) {
-    if (!confirm('Excluir este registro de cio?')) return
-    await excluirCio(uuid)
+    setExcluindoUuid(uuid)
+  }
+
+  async function confirmarExclusao(uuid) {
+    setSalvando(true)
+    setErro('')
+    try {
+      await excluirCio(uuid)
+      setExcluindoUuid(null)
+    } catch (err) {
+      setErro(err.message || String(err))
+    } finally {
+      setSalvando(false)
+    }
   }
 
   return (
@@ -171,13 +184,36 @@ function Cio() {
                       )}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className={styles.btnSecundario}
-                    onClick={() => handleExcluir(c.uuid)}
-                  >
-                    Excluir
-                  </button>
+                  {excluindoUuid === c.uuid ? (
+                    <div className={styles.acaoInline}>
+                      <span className={styles.acaoInlineLabel}>Confirmar exclusão?</span>
+                      <div className={styles.acaoInlineBotoes}>
+                        <button
+                          type="button"
+                          className={styles.btnPrimario}
+                          onClick={() => confirmarExclusao(c.uuid)}
+                          disabled={salvando}
+                        >
+                          {salvando ? 'Excluindo...' : 'Sim, excluir'}
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.btnSecundario}
+                          onClick={() => setExcluindoUuid(null)}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.btnSecundario}
+                      onClick={() => handleExcluir(c.uuid)}
+                    >
+                      Excluir
+                    </button>
+                  )}
                 </div>
               )
             })}

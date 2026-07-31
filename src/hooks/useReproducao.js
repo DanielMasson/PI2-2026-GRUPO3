@@ -53,8 +53,8 @@ export function useReproducao(animalUuid) {
     return resultado
   }
 
-  async function registrarParto(uuid, dataParto) {
-    const resultado = await reproducaoService.registrarParto(uuid, dataParto)
+  async function registrarParto(uuid, dataParto, cria = null) {
+    const resultado = await reproducaoService.registrarParto(uuid, dataParto, cria)
     await carregar()
     return resultado
   }

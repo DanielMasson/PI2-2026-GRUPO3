@@ -96,9 +96,8 @@ function HealthModule() {
             { id: 'medicamentos', label: 'Medicamentos', icon: '💊' },
             { id: 'ocorrencias', label: 'Ocorrências', icon: '🩺' },
             { id: 'desempenho', label: 'Desempenho', icon: '⚖️' },
-            { id: 'calendario', label: 'Calendário', icon: '📅' },
             { id: 'localizacao', label: 'Localização', icon: '📍' },
-            { id: 'config', label: 'Config', icon: '⚙️' },
+            { id: 'config', label: 'Calendário & Config', icon: '⚙️' },
           ].map(aba => (
             <button
               key={aba.id}
@@ -117,8 +116,12 @@ function HealthModule() {
         {abaAtiva === 'ocorrencias' && <AbaOcorrencias propriedadeId={propriedadeId} animalPreSelecionado={animalParam} />}
         {abaAtiva === 'localizacao' && <AbaLocalizacao propriedadeId={propriedadeId} animalPreSelecionado={animalParam} />}
         {abaAtiva === 'desempenho' && <AbaDesempenho propriedadeId={propriedadeId} />}
-        {abaAtiva === 'calendario' && <AbaCalendario propriedadeId={propriedadeId} />}
-        {abaAtiva === 'config' && <AbaConfig propriedadeId={propriedadeId} />}
+        {abaAtiva === 'config' && (
+          <>
+            <AbaCalendario propriedadeId={propriedadeId} />
+            <AbaConfig propriedadeId={propriedadeId} />
+          </>
+        )}
       </div>
     </div>
   )
