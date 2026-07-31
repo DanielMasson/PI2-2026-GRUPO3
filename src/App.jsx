@@ -15,6 +15,10 @@ import HealthModule from './pages/HealthModule'
 import ListaAnimais from './pages/ListaAnimais'
 import FichaAnimal from './pages/FichaAnimal'
 import Reproducao from './pages/Reproducao'
+import ReproducaoCio from './pages/Reproducao/Cio'
+import ReproducaoCobertura from './pages/Reproducao/Cobertura'
+import ReproducaoPrenhez from './pages/Reproducao/Prenhez'
+import ReproducaoParto from './pages/Reproducao/Parto'
 import ArvoreGenealogica from './pages/ArvoreGenealogica'
 import ProducaoLeite from './pages/ProducaoLeite'
 import Configuracoes from './pages/Configuracoes'
@@ -43,6 +47,10 @@ function AppRoutes() {
       <Route path="/propriedade/:propriedadeId/animal/:animalId" element={<RotaPrivada><FichaAnimal /></RotaPrivada>} />
       <Route path="/propriedade/:propriedadeId/saude" element={<RotaPrivada><HealthModule /></RotaPrivada>} />
       <Route path="/propriedade/:propriedadeId/reproducao" element={<RotaPrivada><Reproducao /></RotaPrivada>} />
+      <Route path="/propriedade/:propriedadeId/reproducao/cio" element={<RotaPrivada><ReproducaoCio /></RotaPrivada>} />
+      <Route path="/propriedade/:propriedadeId/reproducao/cobertura" element={<RotaPrivada><ReproducaoCobertura /></RotaPrivada>} />
+      <Route path="/propriedade/:propriedadeId/reproducao/prenhez" element={<RotaPrivada><ReproducaoPrenhez /></RotaPrivada>} />
+      <Route path="/propriedade/:propriedadeId/reproducao/parto" element={<RotaPrivada><ReproducaoParto /></RotaPrivada>} />
       <Route path="/propriedade/:propriedadeId/animal/:animalId/genealogia" element={<RotaPrivada><ArvoreGenealogica /></RotaPrivada>} />
       <Route path="/propriedade/:propriedadeId/producao-leite" element={<RotaPrivada><ProducaoLeite /></RotaPrivada>} />
       <Route path="/configuracoes" element={<RotaPrivada><Configuracoes /></RotaPrivada>} />
