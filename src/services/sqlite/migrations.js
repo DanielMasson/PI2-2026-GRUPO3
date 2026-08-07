@@ -281,6 +281,13 @@ const SQL_MIGRACOES = [
   // Sprint 6: peso de abate estimado em animais (contagem regressiva no dashboard)
   "ALTER TABLE animais ADD COLUMN peso_abate_estimado REAL",
   "ALTER TABLE animais ADD COLUMN data_abate_estimada TEXT",
+  // Sync Firebase: tabela key/value para metadados de sincronização
+  // (ex.: last_pull_at). Idempotente: IF NOT EXISTS evita duplicação.
+  `CREATE TABLE IF NOT EXISTS _sync_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT,
+    updated_at TEXT
+  )`,
 ]
 
 function executarSqlSemErro(db, sql) {

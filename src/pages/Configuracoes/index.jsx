@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { usePropriedade } from '../../contexts/PropriedadeContext'
 import * as usuarioService from '../../services/usuarioService'
+import SecaoSync from './SecaoSync'
 import styles from './Configuracoes.module.css'
 
 function Configuracoes() {
@@ -14,9 +15,6 @@ function Configuracoes() {
   const [carregandoMembros, setCarregandoMembros] = useState(true)
 
   // Estado das configurações
-  const [syncAuto, setSyncAuto] = useState(true)
-  const [apenasWifi, setApenasWifi] = useState(false)
-  const [intervalo, setIntervalo] = useState('5')
   const [notificacoes, setNotificacoes] = useState(true)
 
   useEffect(() => {
@@ -37,11 +35,6 @@ function Configuracoes() {
   }, [propriedadeAtiva?.uuid])
 
   const totalMembros = membros.length
-
-  function handleSync() {
-    setSucesso('Sincronização concluída!')
-    setTimeout(() => setSucesso(''), 3000)
-  }
 
   async function handleLogout() {
     await logout()
@@ -155,78 +148,8 @@ function Configuracoes() {
           </div>
         </div>
 
-        {/* SINCRONIZAÇÃO */}
-        <div className={styles.section}>
-          <div className={styles.sectionTitle}>Sincronização</div>
-          <div className={styles.sectionCard}>
-            <div className={styles.item}>
-              <span className={styles.itemIcon}>☁️</span>
-              <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Status</span>
-                <span className={styles.itemDesc}>Última sync: hoje às 14:30</span>
-              </div>
-              <span className={`${styles.statusBadge} ${styles.sincronizado}`}>Sincronizado</span>
-            </div>
-
-            <div className={styles.item}>
-              <span className={styles.itemIcon}>🔄</span>
-              <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Sincronização automática</span>
-                <span className={styles.itemDesc}>Sync automática em segundo plano</span>
-              </div>
-              <label className={styles.toggle} onClick={e => e.stopPropagation()}>
-                <input
-                  type="checkbox"
-                  checked={syncAuto}
-                  onChange={e => setSyncAuto(e.target.checked)}
-                />
-                <span className={styles.toggleSlider} />
-              </label>
-            </div>
-
-            <div className={styles.item}>
-              <span className={styles.itemIcon}>📶</span>
-              <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Apenas Wi-Fi</span>
-                <span className={styles.itemDesc}>Sync somente em rede Wi-Fi</span>
-              </div>
-              <label className={styles.toggle} onClick={e => e.stopPropagation()}>
-                <input
-                  type="checkbox"
-                  checked={apenasWifi}
-                  onChange={e => setApenasWifi(e.target.checked)}
-                />
-                <span className={styles.toggleSlider} />
-              </label>
-            </div>
-
-            <div className={styles.item}>
-              <span className={styles.itemIcon}>⏱</span>
-              <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Intervalo de sync</span>
-                <span className={styles.itemDesc}>Frequência da sincronização</span>
-              </div>
-              <select
-                value={intervalo}
-                onChange={e => setIntervalo(e.target.value)}
-                className={styles.selectSmall}
-              >
-                <option value="5">5 min</option>
-                <option value="15">15 min</option>
-                <option value="30">30 min</option>
-              </select>
-            </div>
-
-            <div className={styles.item} onClick={handleSync}>
-              <span className={styles.itemIcon}>🔃</span>
-              <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Forçar sincronização</span>
-                <span className={styles.itemDesc}>Executar sync manual agora</span>
-              </div>
-              <span className={styles.itemArrow}>›</span>
-            </div>
-          </div>
-        </div>
+        {/* SINCRONIZAÇÃO — usa o hook useSync para dados reais */}
+        <SecaoSync />
 
         {/* SOBRE */}
         <div className={styles.section}>

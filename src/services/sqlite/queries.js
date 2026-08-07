@@ -716,6 +716,61 @@ export async function marcarSincronizado(tabela, uuid) {
   )
 }
 
+export async function contarPendentes() {
+  // Soma registros com sync_status='novo' ou 'modificado' em todas as 11
+  // tabelas replicadas. Soft-deletes têm sync_status='modificado' também,
+  // então contam aqui — correto, pois o push precisa replicá-los.
+  const db = getDb()
+  const tabelas = [
+    'usuarios',
+    'propriedades',
+    'propriedade_membros',
+    'animais',
+    'vacinas',
+    'pesagens',
+    'medicamentos',
+    'ocorrencias',
+    'movimentacoes_local',
+    'reproducao',
+    'producao_leite',
+  ]
+  let total = 0
+  for (const tabela of tabelas) {
+    const result = await executar(
+      db,
+      `SELECT COUNT(*) AS n FROM ${tabela} WHERE sync_status IN ('novo', 'modificado')`,
+      [],
+    )
+    const rows = rowsToArray(result)
+    total += rows[0]?.n ?? 0
+  }
+  return total
+}
+
+// ─── _SYNC_META KEY/VALUE ───
+
+export async function obterMeta(key) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT value FROM _sync_meta WHERE key = ?`,
+    [key],
+  )
+  const rows = rowsToArray(result)
+  return rows[0]?.value ?? null
+}
+
+export async function definirMeta(key, value) {
+  const db = getDb()
+  const timestamp = agora()
+  // UPSERT: INSERT ou REPLACE — chave é PK, então substituir é seguro.
+  await executar(
+    db,
+    `INSERT OR REPLACE INTO _sync_meta (key, value, updated_at) VALUES (?, ?, ?)`,
+    [key, String(value), timestamp],
+  )
+}
+
 // ─── USUÁRIOS ───
 
 export async function buscarUsuario(firebaseUid) {

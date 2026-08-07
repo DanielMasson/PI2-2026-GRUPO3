@@ -22,11 +22,20 @@ import ReproducaoParto from './pages/Reproducao/Parto'
 import ArvoreGenealogica from './pages/ArvoreGenealogica'
 import ProducaoLeite from './pages/ProducaoLeite'
 import Configuracoes from './pages/Configuracoes'
+import SyncIndicator from './components/SyncIndicator'
 import './styles/login_global.css'
 
-function RotaPrivada({ children }) {
+// Gate de autenticação que também monta o SyncIndicator globalmente em
+// todas as rotas privadas. Renderiza children + badge fixo top-right.
+function RotaPrivadaComShell({ children }) {
   const { autenticado } = useAuth()
-  return autenticado ? children : <Navigate to="/login" />
+  if (!autenticado) return <Navigate to="/login" />
+  return (
+    <>
+      {children}
+      <SyncIndicator />
+    </>
+  )
 }
 
 function AppRoutes() {
@@ -40,20 +49,20 @@ function AppRoutes() {
       <Route path="/criar-senha" element={<CreatePassword />} />
 
       {/* Rotas privadas */}
-      <Route path="/dashboard" element={<RotaPrivada><Dashboard /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId" element={<RotaPrivada><PropertyHome /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/cadastro-animal" element={<RotaPrivada><CadastroAnimal /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/animais" element={<RotaPrivada><ListaAnimais /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/animal/:animalId" element={<RotaPrivada><FichaAnimal /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/saude" element={<RotaPrivada><HealthModule /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/reproducao" element={<RotaPrivada><Reproducao /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/reproducao/cio" element={<RotaPrivada><ReproducaoCio /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/reproducao/cobertura" element={<RotaPrivada><ReproducaoCobertura /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/reproducao/prenhez" element={<RotaPrivada><ReproducaoPrenhez /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/reproducao/parto" element={<RotaPrivada><ReproducaoParto /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/animal/:animalId/genealogia" element={<RotaPrivada><ArvoreGenealogica /></RotaPrivada>} />
-      <Route path="/propriedade/:propriedadeId/producao-leite" element={<RotaPrivada><ProducaoLeite /></RotaPrivada>} />
-      <Route path="/configuracoes" element={<RotaPrivada><Configuracoes /></RotaPrivada>} />
+      <Route path="/dashboard" element={<RotaPrivadaComShell><Dashboard /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId" element={<RotaPrivadaComShell><PropertyHome /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/cadastro-animal" element={<RotaPrivadaComShell><CadastroAnimal /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/animais" element={<RotaPrivadaComShell><ListaAnimais /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/animal/:animalId" element={<RotaPrivadaComShell><FichaAnimal /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/saude" element={<RotaPrivadaComShell><HealthModule /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/reproducao" element={<RotaPrivadaComShell><Reproducao /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/reproducao/cio" element={<RotaPrivadaComShell><ReproducaoCio /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/reproducao/cobertura" element={<RotaPrivadaComShell><ReproducaoCobertura /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/reproducao/prenhez" element={<RotaPrivadaComShell><ReproducaoPrenhez /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/reproducao/parto" element={<RotaPrivadaComShell><ReproducaoParto /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/animal/:animalId/genealogia" element={<RotaPrivadaComShell><ArvoreGenealogica /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/producao-leite" element={<RotaPrivadaComShell><ProducaoLeite /></RotaPrivadaComShell>} />
+      <Route path="/configuracoes" element={<RotaPrivadaComShell><Configuracoes /></RotaPrivadaComShell>} />
 
       {/* Redirecionamento padrão */}
       <Route path="/" element={<Navigate to="/login" />} />

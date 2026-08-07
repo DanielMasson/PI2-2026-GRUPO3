@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { auth } from '../services/firebase/config'
 import { traduzirErroAuth } from '../services/erroresFirebase'
+import { sincronizarAgora } from '../services/sync/orchestrator'
 import * as usuarioService from '../services/usuarioService'
 
 const AuthContext = createContext()
@@ -102,6 +103,16 @@ export function AuthProvider({ children }) {
           if (syncingRef.current) return
           const local = await espelharUsuarioLocal(firebaseUser)
           setUsuario(local)
+
+          // Sync automático no login (decision ratificada 05/08):
+          // pull traz mudanças remotas; push envia alterações locais.
+          // Fire-and-forget — não bloqueia navegação, SyncIndicator
+          // mostra progresso no header global.
+          if (navigator.onLine) {
+            sincronizarAgora()
+              .then(() => console.log('[AuthContext] Sync automática OK'))
+              .catch(err => console.warn('[AuthContext] Sync automática falhou:', err))
+          }
         } else {
           setUsuario(null)
         }
