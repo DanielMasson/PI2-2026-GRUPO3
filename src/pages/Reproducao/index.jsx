@@ -126,6 +126,7 @@ function Reproducao() {
           else if (tab === 'saude') navigate(`/propriedade/${propriedadeId}/saude`)
           else if (tab === 'reproducao') navigate(`/propriedade/${propriedadeId}/reproducao`)
           else if (tab === 'leite') navigate(`/propriedade/${propriedadeId}/producao-leite`)
+          else if (tab === 'corte') navigate(`/propriedade/${propriedadeId}/corte`)
         }}
       />
     </div>

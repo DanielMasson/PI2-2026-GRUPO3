@@ -21,6 +21,14 @@ export async function sincronizarAgora() {
   const timestamp = new Date().toISOString()
   await definirMeta(META_LAST_SYNC, timestamp)
 
+  // Emite evento global para que hooks (useAnimais, etc.) re-fetch do SQLite
+  // após o pull trazer alterações remotas. Centralizado aqui para que tanto
+  // o SyncIndicator (click manual) quanto o AuthContext (login automático)
+  // disparem o mesmo sinal.
+  window.dispatchEvent(new CustomEvent('sync:atualizado', {
+    detail: { push: pushResult, pull: pullResult, sincronizadoEm: timestamp },
+  }))
+
   return {
     ...pushResult,
     ...pullResult,

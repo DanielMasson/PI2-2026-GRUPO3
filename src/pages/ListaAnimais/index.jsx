@@ -54,6 +54,8 @@ function ListaAnimais() {
       navigate(`/propriedade/${propriedadeId}/reproducao`)
     } else if (key === 'leite') {
       navigate(`/propriedade/${propriedadeId}/producao-leite`)
+    } else if (key === 'corte') {
+      navigate(`/propriedade/${propriedadeId}/corte`)
     } else {
       setActiveTab(key)
     }

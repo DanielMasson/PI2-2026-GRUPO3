@@ -1,3 +1,11 @@
+/* ─── Corte (Desempenho de Corte) — Sprint 8.5 ────────────────────────────── */
+/* Base copiada de ProducaoLeite.module.css com adaptações:
+   - .vacasList/.vacaCard → .animaisList/.animalCard
+   - .milkTabs/.milkTab/.milkTabActive → .corteTabs/.corteTab/.corteTabActive
+   - classes extras: animalHeader/animalInfo/animalNome/animalMeta/animalBadges
+     gmdBadge + 5 variantes status GMD + abateBadge + pesoGrid + pesoField/pesoLabel/pesoInput + abateInfo
+*/
+
 /* ─── Layout ─────────────────────────────────────────────────────────────── */
 .container {
   display: flex;
@@ -71,6 +79,7 @@
   justify-content: space-between;
   margin-bottom: var(--space-lg);
   gap: var(--space-md);
+  flex-wrap: wrap;
 }
 
 .dataLabel {
@@ -94,15 +103,15 @@
   border-color: #c8a97e;
 }
 
-/* ─── Cards de vacas ─────────────────────────────────────────────────────── */
-.vacasList {
+/* ─── Cards de animais de corte ──────────────────────────────────────────── */
+.animaisList {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
   margin-bottom: var(--space-xl);
 }
 
-.vacaCard {
+.animalCard {
   background-color: #1a241a;
   border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -111,11 +120,7 @@
   transition: border-color var(--transition-fast);
 }
 
-.vacaCard.alertaCcs {
-  border-left-color: #c0392b;
-}
-
-.vacaHeader {
+.animalHeader {
   padding: var(--space-md) var(--space-lg);
   display: flex;
   align-items: center;
@@ -124,66 +129,106 @@
   flex-wrap: wrap;
 }
 
-.vacaInfo {
+.animalInfo {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  flex: 1;
 }
 
-.vacaNome {
+.animalNome {
   font-size: var(--font-size-md);
   font-weight: 700;
   color: #f0ecff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.vacaMeta {
+.animalMeta {
   font-size: var(--font-size-sm);
   color: #9b92b8;
 }
 
-.vacaBadges {
+.animalBadges {
   display: flex;
   gap: var(--space-sm);
   align-items: center;
+  flex-wrap: wrap;
 }
 
-.totalBadge {
-  font-size: var(--font-size-sm);
+/* ─── Badges de GMD (5 status) ────────────────────────────────────────────── */
+.gmdBadge {
+  font-size: 11px;
   font-weight: 700;
-  padding: 4px 12px;
+  padding: 4px 10px;
   border-radius: var(--radius-pill);
-  background-color: rgba(78, 138, 26, 0.2);
-  color: #82c341;
   white-space: nowrap;
 }
 
-.totalBadge.alerta {
+.gmdOtimo {
+  background-color: rgba(78, 138, 26, 0.25);
+  color: #82c341;
+}
+
+.gmdBom {
+  background-color: rgba(130, 195, 65, 0.18);
+  color: #a5d653;
+}
+
+.gmdRegular {
+  background-color: rgba(241, 196, 15, 0.15);
+  color: #f1c40f;
+}
+
+.gmdEstavel {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #9b92b8;
+}
+
+.gmdPerda {
   background-color: rgba(192, 57, 43, 0.2);
   color: #e74c3c;
 }
 
-/* ─── Inputs de ordenha ──────────────────────────────────────────────────── */
-.ordenhaGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: var(--space-md);
-  padding: 0 var(--space-lg) var(--space-lg);
+.gmdSemDados {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #6b6280;
 }
 
-.ordenhaField {
+.abateBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(192, 57, 43, 0.25);
+  color: #ff6b5a;
+  white-space: nowrap;
+}
+
+/* ─── Inputs de pesagem (peso + ECC + observação) ─────────────────────────── */
+.pesoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: var(--space-md);
+  padding: 0 var(--space-lg) var(--space-md);
+}
+
+.pesoField {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.ordenhaLabel {
+.pesoLabel {
   font-size: 11px;
   color: #9b92b8;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
-.ordenhaInput {
+.pesoInput {
   width: 100%;
   padding: 10px 12px;
   background-color: rgba(255, 255, 255, 0.05);
@@ -194,65 +239,26 @@
   font-family: var(--font-family);
   outline: none;
   transition: border-color var(--transition-fast);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-.ordenhaInput:focus {
+.pesoInput:focus {
   border-color: #c8a97e;
 }
 
-.ordenhaInput::placeholder {
+.pesoInput::placeholder {
   color: rgba(155, 146, 184, 0.4);
 }
 
-.ordenhaInput.alerta {
-  border-color: rgba(192, 57, 43, 0.5);
+.abateInfo {
+  padding: var(--space-sm) var(--space-lg) var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.ccsField {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 0 var(--space-lg) var(--space-lg);
-}
-
-.ccsRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-}
-
-.ccsInput {
-  flex: 1;
-  padding: 10px 12px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-sm);
-  color: #f0ecff;
-  font-size: var(--font-size-md);
-  font-family: var(--font-family);
-  outline: none;
-  transition: border-color var(--transition-fast);
-}
-
-.ccsInput:focus {
-  border-color: #c8a97e;
-}
-
-.ccsInput.alerta {
-  border-color: rgba(192, 57, 43, 0.5);
-}
-
-.ccsAlerta {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  background-color: rgba(192, 57, 43, 0.2);
-  color: #e74c3c;
-  white-space: nowrap;
-}
-
-/* ─── Resumo do mês ──────────────────────────────────────────────────────── */
+/* ─── Resumo do rebanho ───────────────────────────────────────────────────── */
 .resumoCard {
   background-color: #1a241a;
   border-radius: var(--radius-md);
@@ -323,7 +329,12 @@
   background-color: rgba(200, 169, 126, 0.25);
 }
 
-/* ─── Sucesso ────────────────────────────────────────────────────────────── */
+.salvarBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Toasts ─────────────────────────────────────────────────────────────── */
 .successToast {
   background-color: rgba(78, 138, 26, 0.15);
   border: 1px solid rgba(78, 138, 26, 0.4);
@@ -346,7 +357,6 @@
   margin-bottom: var(--space-md);
 }
 
-/* ─── Empty state ────────────────────────────────────────────────────────── */
 .emptyState {
   text-align: center;
   padding: var(--space-xl);
@@ -356,8 +366,8 @@
   border-radius: var(--radius-sm);
 }
 
-/* ─── Tabs de Desempenho Leiteiro ─────────────────────────────────────────── */
-.milkTabs {
+/* ─── Tabs de Desempenho de Corte ─────────────────────────────────────────── */
+.corteTabs {
   display: flex;
   gap: var(--space-xs);
   overflow-x: auto;
@@ -367,11 +377,11 @@
   scrollbar-width: none;
 }
 
-.milkTabs::-webkit-scrollbar {
+.corteTabs::-webkit-scrollbar {
   display: none;
 }
 
-.milkTab {
+.corteTab {
   flex-shrink: 0;
   background: none;
   border: 1px solid transparent;
@@ -384,12 +394,12 @@
   transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
 }
 
-.milkTab:hover {
+.corteTab:hover {
   color: #f0ecff;
   background-color: rgba(255, 255, 255, 0.04);
 }
 
-.milkTabActive {
+.corteTabActive {
   color: #c8a97e;
   border-color: rgba(200, 169, 126, 0.4);
   background-color: rgba(200, 169, 126, 0.1);
@@ -409,7 +419,7 @@
   }
 }
 
-/* ─── Tabela Comparativo ─────────────────────────────────────────────────── */
+/* ─── Tabela Ranking ──────────────────────────────────────────────────────── */
 .tabelaComparativo {
   width: 100%;
   border-collapse: collapse;
@@ -478,7 +488,7 @@
   color: #e74c3c;
 }
 
-/* ─── Alertas de Queda ────────────────────────────────────────────────────── */
+/* ─── Alertas de Corte (3 categorias) ─────────────────────────────────────── */
 .alertasGroupTitle {
   font-size: var(--font-size-sm);
   font-weight: 700;
@@ -585,13 +595,32 @@
   margin-top: 2px;
 }
 
-/* ─── Responsive ─────────────────────────────────────────────────────────── */
+/* ─── Ordenha field (reutilizado em sub-páginas — Graficos/Ranking/Historico) ─ */
+.ordenhaField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ordenhaLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
-  .ordenhaGrid {
+  .pesoGrid {
     grid-template-columns: 1fr;
   }
 
   .resumoGrid {
     grid-template-columns: 1fr;
+  }
+
+  .dataSelector {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

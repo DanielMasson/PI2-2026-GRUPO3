@@ -26,3 +26,26 @@ export function calcularGMD(pesagens) {
   if (dias <= 0) return null
   return (ultima.peso - primeira.peso) / dias
 }
+
+// ─── DESEMPENHO DE CORTE — analytics de propriedade ────────────────────────
+// Wrappers finos sobre as queries analíticas em queries.js (Q1-Q5 de Corte).
+
+export async function seriePesoAnimal(animalUuid, propriedadeUuid, dias) {
+  return await sqlite.seriePesoAnimal(animalUuid, propriedadeUuid, dias)
+}
+
+export async function seriePesoPropriedade(propriedadeUuid, dias) {
+  return await sqlite.seriePesoPropriedade(propriedadeUuid, dias)
+}
+
+export async function rankingGmdAnimais(propriedadeUuid, dias) {
+  return await sqlite.rankingGmdAnimais(propriedadeUuid, dias)
+}
+
+export async function mediaHistoricaGmdPropriedade(propriedadeUuid) {
+  return await sqlite.mediaHistoricaGmdPropriedade(propriedadeUuid)
+}
+
+export async function alertasCortePropriedade(propriedadeUuid) {
+  return await sqlite.alertasCortePropriedade(propriedadeUuid)
+}

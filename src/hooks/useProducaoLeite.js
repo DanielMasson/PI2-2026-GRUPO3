@@ -27,12 +27,12 @@ export function useProducaoLeite(animalUuid) {
   useEffect(() => { carregar() }, [carregar])
 
   async function registrarOrdenha(dados) {
-    const uuid = await producaoLeiteService.registrarOrdenha({
+    const ordenha = await producaoLeiteService.registrarOrdenha({
       ...dados,
       animal_uuid: dados.animal_uuid || animalUuid,
     })
     await carregar()
-    return uuid
+    return ordenha
   }
 
   async function excluirOrdenha(uuid) {

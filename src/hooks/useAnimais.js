@@ -24,6 +24,17 @@ export function useAnimais(propriedadeId) {
 
   useEffect(() => { carregar() }, [carregar])
 
+  // Re-fetch quando o orchestrator termina push+pull (login automático ou
+  // SyncIndicator click manual). Listener global — qualquer hook de dados
+  // pode adotar o mesmo padrão.
+  useEffect(() => {
+    function onSyncAtualizado() {
+      if (propriedadeId) carregar()
+    }
+    window.addEventListener('sync:atualizado', onSyncAtualizado)
+    return () => window.removeEventListener('sync:atualizado', onSyncAtualizado)
+  }, [carregar, propriedadeId])
+
   const animaisFiltrados = animais
     .filter(a => {
       if (!termoBusca) return true

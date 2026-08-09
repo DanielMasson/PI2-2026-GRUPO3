@@ -25,6 +25,7 @@ function PropertyNavWithRoute({ activeTab, setActiveTab, navigate, propriedadeId
     else if (tab === 'saude') navigate(`/propriedade/${propriedadeId}/saude`)
     else if (tab === 'reproducao') navigate(`/propriedade/${propriedadeId}/reproducao`)
     else if (tab === 'leite') navigate(`/propriedade/${propriedadeId}/producao-leite`)
+    else if (tab === 'corte') navigate(`/propriedade/${propriedadeId}/corte`)
    }}
   />
  )
@@ -71,7 +72,8 @@ function ProducaoLeite() {
   })
   if (semOrdenha.length > 0) {
    const nomes = semOrdenha.map(v => v.nome).join(', ')
-   alert(`Registre pelo menos uma ordenha para: ${nomes}`)
+   setErro(`Registre pelo menos uma ordenha para: ${nomes}`)
+   setTimeout(() => setErro(''), 4000)
    return
   }
 
@@ -163,6 +165,34 @@ function ProducaoLeite() {
      <p className={styles.pageSubtitle}>{formatarData(data)}</p>
     </div>
    </header>
+
+   <nav className={styles.milkTabs} aria-label="Seções de Desempenho Leiteiro">
+    <button
+     className={`${styles.milkTab} ${styles.milkTabActive}`}
+     onClick={() => navigate(`/propriedade/${propriedadeId}/producao-leite`)}
+     type="button"
+    >Registro</button>
+    <button
+     className={styles.milkTab}
+     onClick={() => navigate(`/propriedade/${propriedadeId}/producao-leite/graficos`)}
+     type="button"
+    >Gráficos</button>
+    <button
+     className={styles.milkTab}
+     onClick={() => navigate(`/propriedade/${propriedadeId}/producao-leite/comparativo`)}
+     type="button"
+    >Comparativo</button>
+    <button
+     className={styles.milkTab}
+     onClick={() => navigate(`/propriedade/${propriedadeId}/producao-leite/historico`)}
+     type="button"
+    >Histórico</button>
+    <button
+     className={styles.milkTab}
+     onClick={() => navigate(`/propriedade/${propriedadeId}/producao-leite/alertas`)}
+     type="button"
+    >Alertas</button>
+   </nav>
 
    <div className={styles.inner}>
     {sucesso && <div className={styles.successToast}>{sucesso}</div>}

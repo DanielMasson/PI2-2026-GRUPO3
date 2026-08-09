@@ -21,6 +21,15 @@ import ReproducaoPrenhez from './pages/Reproducao/Prenhez'
 import ReproducaoParto from './pages/Reproducao/Parto'
 import ArvoreGenealogica from './pages/ArvoreGenealogica'
 import ProducaoLeite from './pages/ProducaoLeite'
+import ProducaoLeiteGraficos from './pages/ProducaoLeite/Graficos'
+import ProducaoLeiteComparativo from './pages/ProducaoLeite/Comparativo'
+import ProducaoLeiteHistorico from './pages/ProducaoLeite/Historico'
+import ProducaoLeiteAlertas from './pages/ProducaoLeite/Alertas'
+import Corte from './pages/Corte'
+import CorteGraficos from './pages/Corte/Graficos'
+import CorteRanking from './pages/Corte/Ranking'
+import CorteHistorico from './pages/Corte/Historico'
+import CorteAlertas from './pages/Corte/Alertas'
 import Configuracoes from './pages/Configuracoes'
 import SyncIndicator from './components/SyncIndicator'
 import './styles/login_global.css'
@@ -62,6 +71,15 @@ function AppRoutes() {
       <Route path="/propriedade/:propriedadeId/reproducao/parto" element={<RotaPrivadaComShell><ReproducaoParto /></RotaPrivadaComShell>} />
       <Route path="/propriedade/:propriedadeId/animal/:animalId/genealogia" element={<RotaPrivadaComShell><ArvoreGenealogica /></RotaPrivadaComShell>} />
       <Route path="/propriedade/:propriedadeId/producao-leite" element={<RotaPrivadaComShell><ProducaoLeite /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/producao-leite/graficos" element={<RotaPrivadaComShell><ProducaoLeiteGraficos /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/producao-leite/comparativo" element={<RotaPrivadaComShell><ProducaoLeiteComparativo /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/producao-leite/historico" element={<RotaPrivadaComShell><ProducaoLeiteHistorico /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/producao-leite/alertas" element={<RotaPrivadaComShell><ProducaoLeiteAlertas /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/corte" element={<RotaPrivadaComShell><Corte /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/corte/graficos" element={<RotaPrivadaComShell><CorteGraficos /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/corte/ranking" element={<RotaPrivadaComShell><CorteRanking /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/corte/historico" element={<RotaPrivadaComShell><CorteHistorico /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/corte/alertas" element={<RotaPrivadaComShell><CorteAlertas /></RotaPrivadaComShell>} />
       <Route path="/configuracoes" element={<RotaPrivadaComShell><Configuracoes /></RotaPrivadaComShell>} />
 
       {/* Redirecionamento padrão */}

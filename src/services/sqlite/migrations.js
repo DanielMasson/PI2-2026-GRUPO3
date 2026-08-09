@@ -215,6 +215,35 @@ const SQL_TABELAS = [
     synced_at TEXT,
     sync_status TEXT DEFAULT 'novo'
   )`,
+
+  // ── 14. categorias_financeiras ── (Sprint 10: catálogo fixo de categorias)
+  // Apenas SQLite local (não sincroniza). Seed via SQL_MIGRACOES com INSERT OR IGNORE.
+  `CREATE TABLE IF NOT EXISTS categorias_financeiras (
+    uuid TEXT PRIMARY KEY,
+    nome TEXT NOT NULL UNIQUE,
+    rotulo TEXT NOT NULL,
+    tipo TEXT NOT NULL CHECK(tipo IN ('receita','despesa')),
+    ordem INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL
+  )`,
+
+  // ── 15. transacoes_financeiras ── (Sprint 10: entradas/saídas por categoria)
+  // animal_uuid OPCIONAL: vínculo para relatório por animal (ex.: despesa de ração de uma vaca).
+  `CREATE TABLE IF NOT EXISTS transacoes_financeiras (
+    uuid TEXT PRIMARY KEY,
+    propriedade_uuid TEXT NOT NULL,
+    animal_uuid TEXT,
+    categoria_uuid TEXT NOT NULL,
+    tipo TEXT NOT NULL CHECK(tipo IN ('receita','despesa')),
+    descricao TEXT,
+    valor REAL NOT NULL,
+    data TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    synced_at TEXT,
+    sync_status TEXT DEFAULT 'novo',
+    deleted INTEGER DEFAULT 0
+  )`,
 ]
 
 const SQL_INDEXES = [
@@ -245,6 +274,11 @@ const SQL_INDEXES = [
   'CREATE INDEX IF NOT EXISTS idx_mov_data ON movimentacoes_local(data)',
   // Sprint 6: vacinas obrigatórias por propriedade (Eixo 1)
   'CREATE INDEX IF NOT EXISTS idx_obrigatorias_propriedade ON propriedade_vacinas_obrigatorias(propriedade_uuid)',
+  // Sprint 10: índices financeiros (transacoes_financeiras)
+  'CREATE INDEX IF NOT EXISTS idx_transacoes_propriedade ON transacoes_financeiras(propriedade_uuid, data)',
+  'CREATE INDEX IF NOT EXISTS idx_transacoes_animal ON transacoes_financeiras(animal_uuid, data)',
+  'CREATE INDEX IF NOT EXISTS idx_transacoes_categoria ON transacoes_financeiras(categoria_uuid)',
+  'CREATE INDEX IF NOT EXISTS idx_transacoes_sync ON transacoes_financeiras(sync_status)',
 ]
 
 export async function criarTabelas(db) {
@@ -288,6 +322,29 @@ const SQL_MIGRACOES = [
     value TEXT,
     updated_at TEXT
   )`,
+  // Sprint 10: seed das 10 categorias financeiras fixas (idempotente).
+  // UUIDs fixos por categoria permitem referência cruzada entre dispositivos
+  // do mesmo usuário (embora categorias não sincronizem — o seed é idêntico em cada SQLite).
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-venda-leite', 'venda_leite', 'Venda de Leite', 'receita', 1, datetime('now'))`,
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-venda-animal', 'venda_animal', 'Venda de Animal', 'receita', 2, datetime('now'))`,
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-receita-outros', 'receita_outros', 'Outras Receitas', 'receita', 3, datetime('now'))`,
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-racao', 'racao', 'Ração', 'despesa', 11, datetime('now'))`,
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-vacinas', 'vacinas', 'Vacinas', 'despesa', 12, datetime('now'))`,
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-medicamentos', 'medicamentos', 'Medicamentos', 'despesa', 13, datetime('now'))`,
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-veterinario', 'veterinario', 'Veterinário', 'despesa', 14, datetime('now'))`,
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-salarios', 'salarios', 'Salários', 'despesa', 15, datetime('now'))`,
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-combustivel', 'combustivel', 'Combustível', 'despesa', 16, datetime('now'))`,
+  `INSERT OR IGNORE INTO categorias_financeiras (uuid, nome, rotulo, tipo, ordem, created_at)
+   VALUES ('cat-despesa-outros', 'despesa_outros', 'Outras Despesas', 'despesa', 17, datetime('now'))`,
 ]
 
 function executarSqlSemErro(db, sql) {

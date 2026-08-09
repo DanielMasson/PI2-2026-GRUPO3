@@ -1432,6 +1432,12 @@ export async function excluirProducaoLeite(uuid) {
   await executar(db, 'DELETE FROM producao_leite WHERE uuid = ?', [uuid])
 }
 
+export async function buscarProducaoLeite(uuid) {
+  const db = getDb()
+  const result = await executar(db, 'SELECT * FROM producao_leite WHERE uuid = ?', [uuid])
+  return rowsToArray(result)
+}
+
 export async function buscarResumoProducaoLeite(propriedadeUuid) {
   const db = getDb()
   const result = await executar(
@@ -1450,3 +1456,742 @@ export async function buscarResumoProducaoLeite(propriedadeUuid) {
   )
   return rowsToArray(result)
 }
+
+// === ANÁLISE — DESEMPENHO LEITEIRO (Sprint 8) ===
+// Todas filtram especie='bovino' AND sexo='femea' (vacas em lactação aptas).
+// date('now', ?) usa UTC — documentado como limitação em documentacao/modules/milk.md.
+
+// Q1 — Série temporal por animal (último N dias)
+export async function serieAnimal(animalUuid, propriedadeUuid, dias) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT pl.data AS dia,
+            COALESCE(SUM(pl.manha_litros + pl.tarde_litros), 0) AS total_litros
+     FROM producao_leite pl
+     INNER JOIN animais a ON pl.animal_uuid = a.uuid
+     WHERE pl.animal_uuid = ?
+       AND pl.propriedade_uuid = ?
+       AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+       AND pl.data >= date('now', ?)
+     GROUP BY pl.data
+     ORDER BY pl.data ASC`,
+    [animalUuid, propriedadeUuid, `-${dias} days`],
+  )
+  return rowsToArray(result)
+}
+
+// Q2 — Série temporal agregada por propriedade (último N dias)
+export async function seriePropriedade(propriedadeUuid, dias) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT pl.data AS dia,
+            COALESCE(SUM(pl.manha_litros + pl.tarde_litros), 0) AS total_litros,
+            COUNT(DISTINCT pl.animal_uuid) AS vacas_ordenhadas
+     FROM producao_leite pl
+     INNER JOIN animais a ON pl.animal_uuid = a.uuid
+     WHERE pl.propriedade_uuid = ?
+       AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+       AND pl.data >= date('now', ?)
+     GROUP BY pl.data
+     ORDER BY pl.data ASC`,
+    [propriedadeUuid, `-${dias} days`],
+  )
+  return rowsToArray(result)
+}
+
+// Q3 — Comparativo entre animais (janela recente vs janela anterior equivalente)
+// JS calcula delta = total_recente - total_anterior e pct = delta / NULLIF(total_anterior, 0) * 100
+export async function comparativoAnimais(propriedadeUuid, dias) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT a.uuid, a.nome, a.id_fisico,
+            COALESCE(SUM(CASE WHEN pl.data >= date('now', ?)
+                              THEN pl.manha_litros + pl.tarde_litros ELSE 0 END), 0) AS total_recente,
+            COALESCE(SUM(CASE WHEN pl.data >= date('now', ?) AND pl.data < date('now', ?)
+                              THEN pl.manha_litros + pl.tarde_litros ELSE 0 END), 0) AS total_anterior
+     FROM animais a
+     LEFT JOIN producao_leite pl ON pl.animal_uuid = a.uuid
+     WHERE a.propriedade_uuid = ?
+       AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+     GROUP BY a.uuid
+     HAVING total_recente > 0 OR total_anterior > 0
+     ORDER BY total_recente DESC`,
+    [`-${dias} days`, `-${dias * 2} days`, `-${dias} days`, propriedadeUuid],
+  )
+  return rowsToArray(result)
+}
+
+// Q4 — Média histórica por propriedade (móvel 7/30/90 dias em uma query)
+export async function mediaHistoricaPropriedade(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT
+       (SELECT COALESCE(AVG(total_dia), 0) FROM (
+          SELECT pl.data, SUM(pl.manha_litros + pl.tarde_litros) AS total_dia
+          FROM producao_leite pl
+          INNER JOIN animais a ON pl.animal_uuid = a.uuid
+          WHERE pl.propriedade_uuid = ? AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+            AND pl.data >= date('now', '-7 days')
+          GROUP BY pl.data
+       )) AS media_7d,
+       (SELECT COUNT(DISTINCT pl.data) FROM producao_leite pl
+          INNER JOIN animais a ON pl.animal_uuid = a.uuid
+          WHERE pl.propriedade_uuid = ? AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+            AND pl.data >= date('now', '-7 days')) AS dias_7d,
+       (SELECT COALESCE(AVG(total_dia), 0) FROM (
+          SELECT pl.data, SUM(pl.manha_litros + pl.tarde_litros) AS total_dia
+          FROM producao_leite pl
+          INNER JOIN animais a ON pl.animal_uuid = a.uuid
+          WHERE pl.propriedade_uuid = ? AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+            AND pl.data >= date('now', '-30 days')
+          GROUP BY pl.data
+       )) AS media_30d,
+       (SELECT COUNT(DISTINCT pl.data) FROM producao_leite pl
+          INNER JOIN animais a ON pl.animal_uuid = a.uuid
+          WHERE pl.propriedade_uuid = ? AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+            AND pl.data >= date('now', '-30 days')) AS dias_30d,
+       (SELECT COALESCE(AVG(total_dia), 0) FROM (
+          SELECT pl.data, SUM(pl.manha_litros + pl.tarde_litros) AS total_dia
+          FROM producao_leite pl
+          INNER JOIN animais a ON pl.animal_uuid = a.uuid
+          WHERE pl.propriedade_uuid = ? AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+            AND pl.data >= date('now', '-90 days')
+          GROUP BY pl.data
+       )) AS media_90d,
+       (SELECT COUNT(DISTINCT pl.data) FROM producao_leite pl
+          INNER JOIN animais a ON pl.animal_uuid = a.uuid
+          WHERE pl.propriedade_uuid = ? AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+            AND pl.data >= date('now', '-90 days')) AS dias_90d`,
+    [propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid],
+  )
+  return rowsToArray(result)[0] || { media_7d: 0, dias_7d: 0, media_30d: 0, dias_30d: 0, media_90d: 0, dias_90d: 0 }
+}
+
+// Q5 — Alertas de queda brusca de produção
+// Critério: variacao_dia_dia <= -20% (ontem vs hoje) OU variacao_7d <= -30% (média semana atual vs anterior)
+// "hoje" = data mais recente com registro, "ante" = dia anterior ao mais recente
+export async function alertasQuedaLeite(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `WITH ultima_data AS (
+        SELECT MAX(pl.data) AS dia FROM producao_leite pl
+        INNER JOIN animais a ON pl.animal_uuid = a.uuid
+        WHERE pl.propriedade_uuid = ? AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+     ),
+     hoje AS (
+        SELECT pl.animal_uuid, SUM(pl.manha_litros + pl.tarde_litros) AS total
+        FROM producao_leite pl, ultima_data
+        WHERE pl.propriedade_uuid = ? AND pl.data = ultima_data.dia
+        GROUP BY pl.animal_uuid
+     ),
+     ante AS (
+        SELECT pl.animal_uuid, SUM(pl.manha_litros + pl.tarde_litros) AS total
+        FROM producao_leite pl, ultima_data
+        WHERE pl.propriedade_uuid = ? AND pl.data = date(ultima_data.dia, '-1 day')
+        GROUP BY pl.animal_uuid
+     ),
+     seteA AS (
+        SELECT pl.animal_uuid, AVG(pl.manha_litros + pl.tarde_litros) AS media
+        FROM producao_leite pl, ultima_data
+        WHERE pl.propriedade_uuid = ? AND pl.data >= date(ultima_data.dia, '-7 days') AND pl.data < ultima_data.dia
+        GROUP BY pl.animal_uuid
+     ),
+     seteAnt AS (
+        SELECT pl.animal_uuid, AVG(pl.manha_litros + pl.tarde_litros) AS media
+        FROM producao_leite pl, ultima_data
+        WHERE pl.propriedade_uuid = ? AND pl.data >= date(ultima_data.dia, '-14 days') AND pl.data < date(ultima_data.dia, '-7 days')
+        GROUP BY pl.animal_uuid
+     )
+     SELECT a.uuid, a.nome, a.id_fisico,
+            h.total AS total_dia,
+            ant.total AS total_dia_anterior,
+            CASE WHEN ant.total > 0 THEN ROUND((h.total - ant.total) * 100.0 / ant.total, 1) END AS variacao_dia_dia,
+            s7.media AS media_7d,
+            s7a.media AS media_7d_anterior,
+            CASE WHEN s7a.media > 0 THEN ROUND((s7.media - s7a.media) * 100.0 / s7a.media, 1) END AS variacao_7d
+     FROM animais a
+     JOIN hoje h ON h.animal_uuid = a.uuid
+     LEFT JOIN ante ant ON ant.animal_uuid = a.uuid
+     LEFT JOIN seteA s7 ON s7.animal_uuid = a.uuid
+     LEFT JOIN seteAnt s7a ON s7a.animal_uuid = a.uuid
+     WHERE a.propriedade_uuid = ?
+       AND a.especie = 'bovino' AND a.sexo = 'femea' AND a.deleted = 0
+       AND (variacao_dia_dia IS NOT NULL AND variacao_dia_dia <= -20
+            OR variacao_7d IS NOT NULL AND variacao_7d <= -30)
+     ORDER BY COALESCE(variacao_7d, 9999) ASC, COALESCE(variacao_dia_dia, 9999) ASC`,
+    [propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid],
+  )
+  return rowsToArray(result)
+}
+
+// ─── DESEMPENHO DE CORTE (machos bovinos + ovinos/caprinos) ────────────────
+// Filtros: (a.especie='bovino' AND a.sexo='macho') OR a.especie IN ('ovino','caprino')
+// date('now', ?) usa UTC — limitação documentada em documentacao/modules/corte.md.
+
+// Q1 — série temporal de peso por animal
+export async function seriePesoAnimal(animalUuid, propriedadeUuid, dias) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT p.data AS dia, p.peso, p.ecc
+     FROM pesagens p
+     INNER JOIN animais a ON p.animal_uuid = a.uuid
+     WHERE p.animal_uuid = ?
+       AND p.propriedade_uuid = ?
+       AND p.deleted = 0
+       AND a.deleted = 0
+       AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+            OR a.especie IN ('ovino', 'caprino'))
+       AND p.data >= date('now', ?)
+     ORDER BY p.data ASC`,
+    [animalUuid, propriedadeUuid, `-${dias} days`],
+  )
+  return rowsToArray(result)
+}
+
+// Q2 — série temporal agregada por propriedade (peso médio + animais pesados)
+export async function seriePesoPropriedade(propriedadeUuid, dias) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT p.data AS dia,
+            AVG(p.peso) AS peso_medio,
+            COUNT(DISTINCT p.animal_uuid) AS animais_pesados
+     FROM pesagens p
+     INNER JOIN animais a ON p.animal_uuid = a.uuid
+     WHERE p.propriedade_uuid = ?
+       AND p.deleted = 0
+       AND a.deleted = 0
+       AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+            OR a.especie IN ('ovino', 'caprino'))
+       AND p.data >= date('now', ?)
+     GROUP BY p.data
+     ORDER BY p.data ASC`,
+    [propriedadeUuid, `-${dias} days`],
+  )
+  return rowsToArray(result)
+}
+
+// Q3 — Ranking de animais por GMD (kg/dia) na janela
+// Calcula GMD usando primeira e última pesagem dentro da janela por animal.
+export async function rankingGmdAnimais(propriedadeUuid, dias) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `WITH pesagens_janela AS (
+       SELECT p.animal_uuid, p.data, p.peso,
+              ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data ASC) AS rn_asc,
+              ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data DESC) AS rn_desc,
+              COUNT(*) OVER (PARTITION BY p.animal_uuid) AS total_pesagens
+       FROM pesagens p
+       INNER JOIN animais a ON p.animal_uuid = a.uuid
+       WHERE p.propriedade_uuid = ?
+         AND p.deleted = 0
+         AND a.deleted = 0
+         AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+              OR a.especie IN ('ovino', 'caprino'))
+         AND p.data >= date('now', ?)
+     )
+     SELECT a.uuid,
+            a.nome,
+            a.id_fisico,
+            a.peso_abate_estimado,
+            MAX(CASE WHEN pj.rn_desc = 1 THEN pj.peso END) AS peso_atual,
+            MAX(CASE WHEN pj.rn_asc = 1 THEN pj.peso END) AS peso_anterior,
+            MAX(pj.total_pesagens) AS total_pesagens,
+            CASE
+              WHEN MAX(pj.total_pesagens) >= 2 THEN
+                ROUND(
+                  (MAX(CASE WHEN pj.rn_desc = 1 THEN pj.peso END)
+                   - MAX(CASE WHEN pj.rn_asc = 1 THEN pj.peso END))
+                  / MAX(julianday(MAX(CASE WHEN pj.rn_desc = 1 THEN pj.data END)
+                       - julianday(MAX(CASE WHEN pj.rn_asc = 1 THEN pj.data END))),
+                  3
+                )
+              ELSE NULL
+            END AS gmd
+     FROM animais a
+     INNER JOIN pesagens_janela pj ON pj.animal_uuid = a.uuid
+     WHERE a.deleted = 0
+       AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+            OR a.especie IN ('ovino', 'caprino'))
+     GROUP BY a.uuid, a.nome, a.id_fisico, a.peso_abate_estimado
+     ORDER BY gmd DESC`,
+    [propriedadeUuid, `-${dias} days`],
+  )
+  return rowsToArray(result)
+}
+
+// Q4 — Média histórica de GMD + ECC médio em janelas 7/30/90 dias
+// gmd_dias_Nd = número de animais com ≥2 pesagens na janela (aptos a calcular GMD)
+export async function mediaHistoricaGmdPropriedade(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT
+       (SELECT COALESCE(ROUND(AVG(gmd_animal), 3), 0)
+        FROM (
+          SELECT
+            (MAX(CASE WHEN rn_desc = 1 THEN peso END)
+             - MAX(CASE WHEN rn_asc = 1 THEN peso END))
+            / MAX(julianday(MAX(CASE WHEN rn_desc = 1 THEN data END)
+                 - julianday(MAX(CASE WHEN rn_asc = 1 THEN data END)))) AS gmd_animal
+          FROM (
+            SELECT p.animal_uuid, p.data, p.peso,
+                   ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data ASC) AS rn_asc,
+                   ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data DESC) AS rn_desc,
+                   COUNT(*) OVER (PARTITION BY p.animal_uuid) AS total
+            FROM pesagens p
+            INNER JOIN animais a ON p.animal_uuid = a.uuid
+            WHERE p.propriedade_uuid = ?
+              AND p.deleted = 0
+              AND a.deleted = 0
+              AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+                   OR a.especie IN ('ovino', 'caprino'))
+              AND p.data >= date('now', '-7 days')
+          )
+          GROUP BY animal_uuid
+          HAVING MAX(total) >= 2
+        )) AS gmd_media_7d,
+       (SELECT COUNT(*)
+        FROM (
+          SELECT animal_uuid, COUNT(*) AS total
+          FROM pesagens p
+          INNER JOIN animais a ON p.animal_uuid = a.uuid
+          WHERE p.propriedade_uuid = ?
+            AND p.deleted = 0 AND a.deleted = 0
+            AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+                 OR a.especie IN ('ovino', 'caprino'))
+            AND p.data >= date('now', '-7 days')
+          GROUP BY animal_uuid
+          HAVING total >= 2
+        )) AS gmd_dias_7d,
+       (SELECT COALESCE(ROUND(AVG(gmd_animal), 3), 0)
+        FROM (
+          SELECT
+            (MAX(CASE WHEN rn_desc = 1 THEN peso END)
+             - MAX(CASE WHEN rn_asc = 1 THEN peso END))
+            / MAX(julianday(MAX(CASE WHEN rn_desc = 1 THEN data END)
+                 - julianday(MAX(CASE WHEN rn_asc = 1 THEN data END)))) AS gmd_animal
+          FROM (
+            SELECT p.animal_uuid, p.data, p.peso,
+                   ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data ASC) AS rn_asc,
+                   ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data DESC) AS rn_desc,
+                   COUNT(*) OVER (PARTITION BY p.animal_uuid) AS total
+            FROM pesagens p
+            INNER JOIN animais a ON p.animal_uuid = a.uuid
+            WHERE p.propriedade_uuid = ?
+              AND p.deleted = 0
+              AND a.deleted = 0
+              AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+                   OR a.especie IN ('ovino', 'caprino'))
+              AND p.data >= date('now', '-30 days')
+          )
+          GROUP BY animal_uuid
+          HAVING MAX(total) >= 2
+        )) AS gmd_media_30d,
+       (SELECT COUNT(*)
+        FROM (
+          SELECT animal_uuid, COUNT(*) AS total
+          FROM pesagens p
+          INNER JOIN animais a ON p.animal_uuid = a.uuid
+          WHERE p.propriedade_uuid = ?
+            AND p.deleted = 0 AND a.deleted = 0
+            AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+                 OR a.especie IN ('ovino', 'caprino'))
+            AND p.data >= date('now', '-30 days')
+          GROUP BY animal_uuid
+          HAVING total >= 2
+        )) AS gmd_dias_30d,
+       (SELECT COALESCE(ROUND(AVG(gmd_animal), 3), 0)
+        FROM (
+          SELECT
+            (MAX(CASE WHEN rn_desc = 1 THEN peso END)
+             - MAX(CASE WHEN rn_asc = 1 THEN peso END))
+            / MAX(julianday(MAX(CASE WHEN rn_desc = 1 THEN data END)
+                 - julianday(MAX(CASE WHEN rn_asc = 1 THEN data END)))) AS gmd_animal
+          FROM (
+            SELECT p.animal_uuid, p.data, p.peso,
+                   ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data ASC) AS rn_asc,
+                   ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data DESC) AS rn_desc,
+                   COUNT(*) OVER (PARTITION BY p.animal_uuid) AS total
+            FROM pesagens p
+            INNER JOIN animais a ON p.animal_uuid = a.uuid
+            WHERE p.propriedade_uuid = ?
+              AND p.deleted = 0
+              AND a.deleted = 0
+              AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+                   OR a.especie IN ('ovino', 'caprino'))
+              AND p.data >= date('now', '-90 days')
+          )
+          GROUP BY animal_uuid
+          HAVING MAX(total) >= 2
+        )) AS gmd_media_90d,
+       (SELECT COUNT(*)
+        FROM (
+          SELECT animal_uuid, COUNT(*) AS total
+          FROM pesagens p
+          INNER JOIN animais a ON p.animal_uuid = a.uuid
+          WHERE p.propriedade_uuid = ?
+            AND p.deleted = 0 AND a.deleted = 0
+            AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+                 OR a.especie IN ('ovino', 'caprino'))
+            AND p.data >= date('now', '-90 days')
+          GROUP BY animal_uuid
+          HAVING total >= 2
+        )) AS gmd_dias_90d,
+       (SELECT COALESCE(ROUND(AVG(p.ecc), 2), 0)
+        FROM pesagens p
+        INNER JOIN animais a ON p.animal_uuid = a.uuid
+        WHERE p.propriedade_uuid = ?
+          AND p.deleted = 0 AND a.deleted = 0
+          AND p.ecc IS NOT NULL
+          AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+               OR a.especie IN ('ovino', 'caprino'))
+          AND p.data >= date('now', '-90 days')) AS ecc_medio_90d`,
+    [propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid, propriedadeUuid],
+  )
+  return rowsToArray(result).length > 0 ? rowsToArray(result)[0] : {
+    gmd_media_7d: 0, gmd_dias_7d: 0,
+    gmd_media_30d: 0, gmd_dias_30d: 0,
+    gmd_media_90d: 0, gmd_dias_90d: 0,
+    ecc_medio_90d: 0,
+  }
+}
+
+// Q5 — Alertas de Corte (3 categorias)
+// perda: GMD janela-7d < 0
+// estagnacao: 0 <= GMD < 0.3 E >= 3 pesagens na janela
+// pronto_abate: última pesagem >= 95% do peso_abate_estimado
+export async function alertasCortePropriedade(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `WITH pesagens_janela AS (
+       SELECT p.animal_uuid, p.data, p.peso,
+              ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data ASC) AS rn_asc,
+              ROW_NUMBER() OVER (PARTITION BY p.animal_uuid ORDER BY p.data DESC) AS rn_desc,
+              COUNT(*) OVER (PARTITION BY p.animal_uuid) AS total
+       FROM pesagens p
+       INNER JOIN animais a ON p.animal_uuid = a.uuid
+       WHERE p.propriedade_uuid = ?
+         AND p.deleted = 0 AND a.deleted = 0
+         AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+              OR a.especie IN ('ovino', 'caprino'))
+         AND p.data >= date('now', '-7 days')
+     ),
+     gmd_janela AS (
+       SELECT animal_uuid,
+              MAX(total) AS total_pesagens,
+              MAX(CASE WHEN rn_desc = 1 THEN peso END) AS peso_atual,
+              MAX(CASE WHEN rn_asc = 1 THEN peso END) AS peso_anterior,
+              CASE
+                WHEN MAX(total) >= 2 THEN
+                  (MAX(CASE WHEN rn_desc = 1 THEN peso END)
+                   - MAX(CASE WHEN rn_asc = 1 THEN peso END))
+                  / MAX(julianday(MAX(CASE WHEN rn_desc = 1 THEN data END)
+                       - julianday(MAX(CASE WHEN rn_asc = 1 THEN data END))))
+                ELSE NULL
+              END AS gmd
+       FROM pesagens_janela
+       GROUP BY animal_uuid
+     ),
+     ultima_pesagem AS (
+       SELECT p.animal_uuid, p.peso AS peso_atual_global
+       FROM pesagens p
+       INNER JOIN animais a ON p.animal_uuid = a.uuid
+       WHERE p.propriedade_uuid = ?
+         AND p.deleted = 0 AND a.deleted = 0
+         AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+              OR a.especie IN ('ovino', 'caprino'))
+         AND p.data = (
+           SELECT MAX(p2.data) FROM pesagens p2
+           WHERE p2.animal_uuid = p.animal_uuid AND p2.deleted = 0
+         )
+     )
+     SELECT a.uuid,
+            a.nome,
+            a.id_fisico,
+            a.peso_abate_estimado,
+            up.peso_atual_global AS peso_atual,
+            gj.gmd,
+            gj.total_pesagens,
+            CASE
+              WHEN up.peso_atual_global IS NOT NULL
+                   AND a.peso_abate_estimado IS NOT NULL
+                   AND a.peso_abate_estimado > 0
+                   AND up.peso_atual_global >= (a.peso_abate_estimado * 0.95)
+                THEN 'pronto_abate'
+              WHEN gj.gmd IS NOT NULL AND gj.gmd < 0 THEN 'perda'
+              WHEN gj.gmd IS NOT NULL AND gj.gmd >= 0 AND gj.gmd < 0.3
+                   AND gj.total_pesagens >= 3 THEN 'estagnacao'
+              ELSE NULL
+            END AS tipo_alerta,
+            CASE
+              WHEN up.peso_atual_global IS NOT NULL
+                   AND a.peso_abate_estimado IS NOT NULL
+                   AND a.peso_abate_estimado > 0
+                THEN ROUND(100.0 * up.peso_atual_global / a.peso_abate_estimado, 1)
+              ELSE NULL
+            END AS pct_abate
+     FROM animais a
+     LEFT JOIN gmd_janela gj ON gj.animal_uuid = a.uuid
+     LEFT JOIN ultima_pesagem up ON up.animal_uuid = a.uuid
+     WHERE a.propriedade_uuid = ?
+       AND a.deleted = 0
+       AND ((a.especie = 'bovino' AND a.sexo = 'macho')
+            OR a.especie IN ('ovino', 'caprino'))
+       AND (tipo_alerta IS NOT NULL)
+     ORDER BY
+       CASE tipo_alerta
+         WHEN 'pronto_abate' THEN 1
+         WHEN 'perda' THEN 2
+         WHEN 'estagnacao' THEN 3
+       END,
+       a.nome ASC`,
+    [propriedadeUuid, propriedadeUuid, propriedadeUuid],
+  )
+  return rowsToArray(result)
+}
+
+// ─── TRANSACOES FINANCEIRAS (Sprint 10) ───
+
+// Categorias fixas (catálogo seed via SQL_MIGRACOES)
+export async function listarCategorias() {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT * FROM categorias_financeiras ORDER BY tipo ASC, ordem ASC`,
+    [],
+  )
+  return rowsToArray(result)
+}
+
+export async function buscarCategoriaPorNome(nome) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    'SELECT * FROM categorias_financeiras WHERE nome = ?',
+    [nome],
+  )
+  return result.rows.length > 0 ? result.rows.item(0) : null
+}
+
+// Inserir transação financeira (receita ou despesa)
+export async function inserirTransacaoFinanceira(dados) {
+  const db = getDb()
+  const uuid = dados.uuid || gerarUUID()
+  const timestamp = agora()
+  await executar(
+    db,
+    `INSERT INTO transacoes_financeiras
+     (uuid, propriedade_uuid, animal_uuid, categoria_uuid, tipo, descricao, valor, data,
+      created_at, updated_at, synced_at, sync_status, deleted)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, 'novo', 0)`,
+    [
+      uuid,
+      dados.propriedade_uuid,
+      dados.animal_uuid || null,
+      dados.categoria_uuid,
+      dados.tipo,
+      dados.descricao || null,
+      dados.valor,
+      dados.data,
+      timestamp,
+      timestamp,
+    ],
+  )
+  return uuid
+}
+
+export async function buscarTransacao(uuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT t.*, c.rotulo AS categoria_rotulo, c.nome AS categoria_nome
+     FROM transacoes_financeiras t
+     LEFT JOIN categorias_financeiras c ON t.categoria_uuid = c.uuid
+     WHERE t.uuid = ?`,
+    [uuid],
+  )
+  return result.rows.length > 0 ? result.rows.item(0) : null
+}
+
+// Listar transações da propriedade com filtros opcionais (dataInicio, dataFim, categoriaUuid, tipo, animalUuid)
+export async function listarTransacoesPropriedade(propriedadeUuid, filtros = {}) {
+  const db = getDb()
+  const where = ['t.propriedade_uuid = ?', 't.deleted = 0']
+  const params = [propriedadeUuid]
+  if (filtros.dataInicio) {
+    where.push('t.data >= ?')
+    params.push(filtros.dataInicio)
+  }
+  if (filtros.dataFim) {
+    where.push('t.data <= ?')
+    params.push(filtros.dataFim)
+  }
+  if (filtros.categoriaUuid) {
+    where.push('t.categoria_uuid = ?')
+    params.push(filtros.categoriaUuid)
+  }
+  if (filtros.tipo) {
+    where.push('t.tipo = ?')
+    params.push(filtros.tipo)
+  }
+  if (filtros.animalUuid) {
+    where.push('t.animal_uuid = ?')
+    params.push(filtros.animalUuid)
+  }
+  const result = await executar(
+    db,
+    `SELECT t.*, c.rotulo AS categoria_rotulo, c.nome AS categoria_nome,
+            a.nome AS animal_nome
+     FROM transacoes_financeiras t
+     LEFT JOIN categorias_financeiras c ON t.categoria_uuid = c.uuid
+     LEFT JOIN animais a ON t.animal_uuid = a.uuid
+     WHERE ${where.join(' AND ')}
+     ORDER BY t.data DESC, t.created_at DESC`,
+    params,
+  )
+  return rowsToArray(result)
+}
+
+// Listar transações vinculadas a um animal específico
+export async function listarTransacoesAnimal(animalUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT t.*, c.rotulo AS categoria_rotulo, c.nome AS categoria_nome
+     FROM transacoes_financeiras t
+     LEFT JOIN categorias_financeiras c ON t.categoria_uuid = c.uuid
+     WHERE t.animal_uuid = ? AND t.deleted = 0
+     ORDER BY t.data DESC, t.created_at DESC`,
+    [animalUuid],
+  )
+  return rowsToArray(result)
+}
+
+// Excluir transação (soft delete + marcar como modificado para sync)
+export async function excluirTransacao(uuid) {
+  const db = getDb()
+  const timestamp = agora()
+  await executar(
+    db,
+    `UPDATE transacoes_financeiras
+     SET deleted = 1, updated_at = ?, sync_status = 'modificado'
+     WHERE uuid = ?`,
+    [timestamp, uuid],
+  )
+}
+
+// Saldo total da propriedade: { receitas, despesas, saldo }
+export async function saldoPropriedade(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT
+       COALESCE(SUM(CASE WHEN tipo = 'receita' THEN valor ELSE 0 END), 0) AS receitas,
+       COALESCE(SUM(CASE WHEN tipo = 'despesa' THEN valor ELSE 0 END), 0) AS despesas
+     FROM transacoes_financeiras
+     WHERE propriedade_uuid = ? AND deleted = 0`,
+    [propriedadeUuid],
+  )
+  const row = result.rows.length > 0 ? result.rows.item(0) : { receitas: 0, despesas: 0 }
+  return {
+    receitas: row.receitas || 0,
+    despesas: row.despesas || 0,
+    saldo: (row.receitas || 0) - (row.despesas || 0),
+  }
+}
+
+// Resumo por categoria em um período
+export async function resumoPorCategoria(propriedadeUuid, dataInicio, dataFim) {
+  const db = getDb()
+  const where = ['t.propriedade_uuid = ?', 't.deleted = 0']
+  const params = [propriedadeUuid]
+  if (dataInicio) {
+    where.push('t.data >= ?')
+    params.push(dataInicio)
+  }
+  if (dataFim) {
+    where.push('t.data <= ?')
+    params.push(dataFim)
+  }
+  const result = await executar(
+    db,
+    `SELECT t.categoria_uuid, c.nome AS categoria, c.rotulo, c.tipo,
+            SUM(t.valor) AS total
+     FROM transacoes_financeiras t
+     INNER JOIN categorias_financeiras c ON t.categoria_uuid = c.uuid
+     WHERE ${where.join(' AND ')}
+     GROUP BY t.categoria_uuid, c.nome, c.rotulo, c.tipo
+     ORDER BY c.tipo ASC, total DESC`,
+    params,
+  )
+  return rowsToArray(result)
+}
+
+// Resumo por animal em um período (receitas - despesas vinculadas)
+export async function resumoPorAnimal(propriedadeUuid, dataInicio, dataFim) {
+  const db = getDb()
+  const where = ['t.propriedade_uuid = ?', 't.deleted = 0', 't.animal_uuid IS NOT NULL']
+  const params = [propriedadeUuid]
+  if (dataInicio) {
+    where.push('t.data >= ?')
+    params.push(dataInicio)
+  }
+  if (dataFim) {
+    where.push('t.data <= ?')
+    params.push(dataFim)
+  }
+  const result = await executar(
+    db,
+    `SELECT a.uuid AS animal_uuid, a.nome, a.id_fisico,
+            COALESCE(SUM(CASE WHEN t.tipo = 'receita' THEN t.valor ELSE 0 END), 0) AS receitas,
+            COALESCE(SUM(CASE WHEN t.tipo = 'despesa' THEN t.valor ELSE 0 END), 0) AS despesas
+     FROM transacoes_financeiras t
+     INNER JOIN animais a ON t.animal_uuid = a.uuid
+     WHERE ${where.join(' AND ')}
+     GROUP BY a.uuid, a.nome, a.id_fisico
+     ORDER BY (receitas - despesas) DESC`,
+    params,
+  )
+  const rows = rowsToArray(result)
+  return rows.map(r => ({
+    ...r,
+    saldo: (r.receitas || 0) - (r.despesas || 0),
+  }))
+}
+
+// Série mensal (últimos N meses): [{ mes, receitas, despesas, saldo }]
+export async function serieMensalPropriedade(propriedadeUuid, meses = 12) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT strftime('%Y-%m', t.data) AS mes,
+            COALESCE(SUM(CASE WHEN t.tipo = 'receita' THEN t.valor ELSE 0 END), 0) AS receitas,
+            COALESCE(SUM(CASE WHEN t.tipo = 'despesa' THEN t.valor ELSE 0 END), 0) AS despesas
+     FROM transacoes_financeiras t
+     WHERE t.propriedade_uuid = ?
+       AND t.deleted = 0
+       AND t.data >= date('now', ?)
+     GROUP BY strftime('%Y-%m', t.data)
+     ORDER BY mes ASC`,
+    [propriedadeUuid, `-${meses - 1} months`],
+  )
+  const rows = rowsToArray(result)
+  return rows.map(r => ({
+    ...r,
+    saldo: (r.receitas || 0) - (r.despesas || 0),
+  }))
+}
+
+// Sync helpers genéricos (listarPendentes, marcarSincronizado, upsertLocal) em queries.js
+// já cobrem transacoes_financeiras por nome de tabela — não precisamos de wrappers específicos.
+// Ver pullEngine.js:69 (upsertLocal) e queries.js:699 (listarPendentes).
+
