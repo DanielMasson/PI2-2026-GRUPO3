@@ -1,0 +1,37 @@
+.wrapper {
+  background-color: #1a241a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  overflow-x: auto;
+}
+
+.wrapper svg {
+  display: block;
+}
+
+.axisLabel {
+  font-size: 11px;
+  fill: #9b92b8;
+  font-family: var(--font-family);
+}
+
+.unitLabel {
+  font-size: 10px;
+  font-weight: 700;
+  fill: #c8a97e;
+  font-family: var(--font-family);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.empty {
+  text-align: center;
+  padding: var(--space-lg);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+  border: 1.5px dashed rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  margin: 0;
+}

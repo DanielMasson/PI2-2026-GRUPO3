@@ -1,0 +1,731 @@
+/* ─── Financeiro (Sprint 10) ───────────────────────────────────────────── */
+/* Base copiada de ProducaoLeite/Corte.module.css com adaptações:
+   - .milkTabs/.corteTabs → .financeiroTabs/.financeiroTab/.financeiroTabActive
+   - cards de saldo (receitas/despesas/saldo) + cores fixas
+   - formulário de transação + tabela + filtros + ranking de animais
+*/
+
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #0f1a0f;
+  font-family: var(--font-family);
+}
+
+.inner {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + 80px);
+}
+
+/* ─── Topbar ──────────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #1a241a;
+  padding: var(--space-md) var(--space-lg);
+  padding-top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.backBtn {
+  background: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #f0ecff;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.backBtn:hover {
+  border-color: #c8a97e;
+  background-color: rgba(200, 169, 126, 0.1);
+}
+
+.pageTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  line-height: 1.2;
+}
+
+.pageSubtitle {
+  font-size: 11px;
+  color: #9b92b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ─── Tabs de Finanças ─────────────────────────────────────────────────────── */
+.financeiroTabs {
+  display: flex;
+  gap: var(--space-xs);
+  overflow-x: auto;
+  padding: var(--space-sm) var(--space-lg);
+  background-color: #1a241a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  scrollbar-width: none;
+}
+
+.financeiroTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.financeiroTab {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  color: #9b92b8;
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.financeiroTab:hover {
+  color: #f0ecff;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.financeiroTabActive {
+  color: #c8a97e;
+  border-color: rgba(200, 169, 126, 0.4);
+  background-color: rgba(200, 169, 126, 0.1);
+}
+
+/* ─── Cards de saldo (Dashboard) ───────────────────────────────────────────── */
+.saldoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+@media (min-width: 560px) {
+  .saldoGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.saldoCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: var(--space-md) var(--space-lg);
+  border-left: 4px solid #4e8a1a;
+}
+
+.saldoCardDespesa {
+  border-left-color: #c0392b;
+}
+
+.saldoCardSaldoPositivo {
+  border-left-color: #82c341;
+}
+
+.saldoCardSaldoNegativo {
+  border-left-color: #e74c3c;
+}
+
+.saldoLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.saldoValor {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: #f0ecff;
+}
+
+.saldoValorPositivo {
+  color: #82c341;
+}
+
+.saldoValorNegativo {
+  color: #e74c3c;
+}
+
+.saldoSub {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+  margin-top: 4px;
+}
+
+/* ─── Seção ───────────────────────────────────────────────────────────────── */
+.sectionTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.sectionCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+/* ─── Form de Nova Transação ───────────────────────────────────────────────── */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+@media (min-width: 560px) {
+  .formGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formFieldFull {
+  grid-column: 1 / -1;
+}
+
+.formLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.formInput,
+.formSelect,
+.formTextarea {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  color: #f0ecff;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family);
+  outline: none;
+  transition: border-color var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.formInput:focus,
+.formSelect:focus,
+.formTextarea:focus {
+  border-color: #c8a97e;
+}
+
+.formInput::placeholder,
+.formTextarea::placeholder {
+  color: rgba(155, 146, 184, 0.4);
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.tipoToggle {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.tipoBtn {
+  flex: 1;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tipoBtnReceitaAtivo {
+  background-color: rgba(78, 138, 26, 0.15);
+  border-color: rgba(130, 195, 65, 0.5);
+  color: #82c341;
+}
+
+.tipoBtnDespesaAtivo {
+  background-color: rgba(192, 57, 43, 0.15);
+  border-color: rgba(231, 76, 60, 0.5);
+  color: #e74c3c;
+}
+
+.salvarBtn {
+  width: 100%;
+  margin-top: var(--space-md);
+  padding: 14px;
+  background-color: rgba(200, 169, 126, 0.15);
+  border: 1px solid rgba(200, 169, 126, 0.3);
+  border-radius: var(--radius-md);
+  color: #c8a97e;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.salvarBtn:hover {
+  background-color: rgba(200, 169, 126, 0.25);
+}
+
+.salvarBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelarBtn {
+  width: 100%;
+  margin-top: var(--space-sm);
+  padding: 10px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.cancelarBtn:hover {
+  color: #f0ecff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.novaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: rgba(200, 169, 126, 0.15);
+  border: 1px solid rgba(200, 169, 126, 0.3);
+  border-radius: var(--radius-pill);
+  color: #c8a97e;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.novaBtn:hover {
+  background-color: rgba(200, 169, 126, 0.25);
+}
+
+/* ─── Gráfico por categoria ────────────────────────────────────────────────── */
+.graficoWrapper {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.graficoTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #f0ecff;
+  margin-bottom: var(--space-md);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.graficoSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.categoriaLista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.categoriaLinha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
+.categoriaNome {
+  color: #f0ecff;
+  font-weight: 500;
+}
+
+.categoriaValor {
+  font-weight: 700;
+  color: #c8a97e;
+}
+
+.categoriaValorDespesa {
+  color: #e74c3c;
+}
+
+/* ─── Filtros (Listar) ─────────────────────────────────────────────────────── */
+.filtrosCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-sm);
+}
+
+@media (min-width: 560px) {
+  .filtrosCard {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.filtroField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ─── Tabela de transações ─────────────────────────────────────────────────── */
+.tabelaTransacoes {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.tabelaTransacoes th {
+  text-align: left;
+  padding: var(--space-sm) var(--space-md);
+  color: #9b92b8;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tabelaTransacoes td {
+  padding: var(--space-md);
+  color: #f0ecff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: top;
+}
+
+.transacaoDescricao {
+  font-weight: 600;
+  color: #f0ecff;
+}
+
+.transacaoSub {
+  font-size: 11px;
+  color: #9b92b8;
+  margin-top: 2px;
+}
+
+.transacaoValor {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.transacaoValorReceita {
+  color: #82c341;
+}
+
+.transacaoValorDespesa {
+  color: #e74c3c;
+}
+
+.categoriaBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #9b92b8;
+  white-space: nowrap;
+}
+
+.excluirBtn {
+  background: none;
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  color: #e74c3c;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.excluirBtn:hover {
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+/* ─── Ranking de animais (PorAnimal) ───────────────────────────────────────── */
+.rankingLista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.rankingCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 4px solid #4e8a1a;
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.rankingCardNegativo {
+  border-left-color: #c0392b;
+}
+
+.rankingCardNeutro {
+  border-left-color: #6b6280;
+}
+
+.rankingHeader {
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-family);
+  color: inherit;
+}
+
+.rankingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rankingNome {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rankingMeta {
+  font-size: var(--font-size-sm);
+  color: #9b92b8;
+}
+
+.rankingStats {
+  display: flex;
+  gap: var(--space-lg);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rankingStat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.rankingStatLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.rankingStatValor {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.rankingStatValorPositivo {
+  color: #82c341;
+}
+
+.rankingStatValorNegativo {
+  color: #e74c3c;
+}
+
+.chevron {
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.chevronAberto {
+  transform: rotate(90deg);
+}
+
+.rankingDetalhes {
+  padding: 0 var(--space-lg) var(--space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.rankingDetalhesLista {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.detalheLinha {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  font-size: var(--font-size-sm);
+  padding: var(--space-xs) 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.04);
+}
+
+.detalheData {
+  color: #9b92b8;
+  flex: 1;
+}
+
+.detalheDesc {
+  color: #f0ecff;
+  flex: 2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detalheCat {
+  color: #c8a97e;
+  flex: 1;
+  font-size: 11px;
+}
+
+.detalheValor {
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.detalheValorReceita {
+  color: #82c341;
+}
+
+.detalheValorDespesa {
+  color: #e74c3c;
+}
+
+/* ─── Toasts + emptyState ──────────────────────────────────────────────────── */
+.successToast {
+  background-color: rgba(78, 138, 26, 0.15);
+  border: 1px solid rgba(78, 138, 26, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #82c341;
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+.errorToast {
+  background-color: rgba(192, 57, 43, 0.15);
+  border: 1px solid rgba(192, 57, 43, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #e74c3c;
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-xl);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+  border: 1.5px dashed rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+.loadingMsg {
+  text-align: center;
+  padding: var(--space-lg);
+  color: #9b92b8;
+  font-size: var(--font-size-sm);
+}
+
+/* ─── Header com ação (título + botão Nova) ─────────────────────────────────── */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .saldoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filtrosCard {
+    grid-template-columns: 1fr;
+  }
+
+  .rankingStats {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-xs);
+  }
+
+  .rankingHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
