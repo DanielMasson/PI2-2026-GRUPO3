@@ -8,6 +8,7 @@ const TABS = [
   { key: 'dashboard', label: 'Dashboard', path: '' },
   { key: 'listar', label: 'Transações', path: 'listar' },
   { key: 'por-animal', label: 'Por Animal', path: 'por-animal' },
+  { key: 'relatorios', label: 'Relatórios', path: 'relatorios' },
 ]
 
 export default function SubpageLayout({ activeTab, children }) {

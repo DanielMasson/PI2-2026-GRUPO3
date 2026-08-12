@@ -11,6 +11,14 @@ import { auth } from '../services/firebase/config'
 import { traduzirErroAuth } from '../services/erroresFirebase'
 import { sincronizarAgora } from '../services/sync/orchestrator'
 import * as usuarioService from '../services/usuarioService'
+import { obterMeta, definirMeta, buscarUsuarioPorUuid } from '../services/sqlite/queries'
+
+// Chaves de sessão persistidas em `_sync_meta` (SQLite local). Permitem
+// hidratar o usuário no boot do app antes do Firebase responder, viabilizando
+// acesso offline após login prévio. `auth_session_uuid` guarda o uuid do
+// último usuário logado; `auth_session_ativa` é flag 1/0.
+const SESSAO_KEY_UUID  = 'auth_session_uuid'
+const SESSAO_KEY_ATIVA = 'auth_session_ativa'
 
 const AuthContext = createContext()
 
@@ -30,17 +38,82 @@ export function AuthProvider({ children }) {
   const syncingRef = useRef(false)
 
   /**
-   * Espelha o `firebaseUser` na tabela local `usuarios`.
-   * - Se já existe, **mescla** com dados do Firebase (email/foto vem do Firebase;
-   *   telefone/cpf/nome persistem do SQLite se já preenchidos).
-   * - Caso contrário, cria a linha com `uuid` derivado do UID do Firebase.
-   * - Em falha de SQLite (browser sem fallback), retorna object mínimo em memória.
-   *
-   * `signupExtras` (parâmetro opcional) carrega dados do fluxo de
-   * `createUserWithEmailAndPassword` que o Firebase Auth não aceita (telefone, cpf).
-   * Esses dados são persistidos no SQLite mas **não** sobrescrevem dados
-   * existentes quando o user re-logar em device novo.
+   * Sessão local ativa? Usada pelo listener onAuthStateChanged para decidir
+   * se um `null` do Firebase significa "usuário deslogado" (online) ou
+   * "Firebase indisponível offline + sessão local prévia" (mantém logado).
+   * Inicia null e é setada pela hidratação local do mount.
    */
+  const sessaoLocalAtivaRef = useRef(false)
+
+  /**
+   * Marca a sessão local como ativa em `_sync_meta`. Persiste o uuid do
+   * usuário que acabou de logar/cadastrar, para hidratar o boot offline.
+   * Tolerante a falhas de SQLite (não bloqueia o login se o storage falhar).
+   */
+  const persistirSessaoLocal = useCallback(async (uuid) => {
+    if (!uuid) return
+    try {
+      await definirMeta(SESSAO_KEY_UUID, uuid)
+      await definirMeta(SESSAO_KEY_ATIVA, '1')
+      sessaoLocalAtivaRef.current = true
+    } catch (e) {
+      console.warn('[AuthContext] Falha ao persistir sessão local:', e)
+    }
+  }, [])
+
+  /**
+   * Limpa a flag de sessão local ativa. Usado em `logout` e em eventos
+   * explícitos de desautenticação vinda do Firebase quando online.
+   */
+  const limparSessaoLocal = useCallback(async () => {
+    sessaoLocalAtivaRef.current = false
+    try {
+      await definirMeta(SESSAO_KEY_ATIVA, '0')
+      await definirMeta(SESSAO_KEY_UUID, '')
+    } catch (e) {
+      console.warn('[AuthContext] Falha ao limpar sessão local:', e)
+    }
+  }, [])
+
+  /**
+   * Hidrata `usuario` a partir do SQLite no boot do app — precede a resposta
+   * do `onAuthStateChanged`, permitindo acesso offline imediato a quem já
+   * logou antes. Retorna `true` se conseguiu hidratar, `false` caso contrário.
+   * Em falha de SQLite, retorna false silenciosamente (fluxo Firebase continua).
+   */
+  const hidratarSessaoLocal = useCallback(async () => {
+    try {
+      const ativa = await obterMeta(SESSAO_KEY_ATIVA)
+      const uuid = await obterMeta(SESSAO_KEY_UUID)
+      if (ativa !== '1' || !uuid) return false
+
+      const local = await buscarUsuarioPorUuid(uuid)
+      if (!local) {
+        // Usuário foi removido do SQLite local (reset do app). Limpa a flag.
+        await limparSessaoLocal()
+        return false
+      }
+      // Normaliza shape igual a usuarioService.buscarUsuarioPorFirebaseUid.
+      const normalizado = {
+        uuid: local.uuid,
+        firebase_uid: local.firebase_uid || null,
+        nome: local.nome || null,
+        email: local.email || null,
+        telefone: local.telefone || null,
+        foto_url: local.foto_url || null,
+        cargo: local.cargo || 'membro',
+        created_at: local.created_at,
+        updated_at: local.updated_at,
+      }
+      setUsuario(normalizado)
+      sessaoLocalAtivaRef.current = true
+      return true
+    } catch (e) {
+      console.warn('[AuthContext] Falha ao hidratar sessão local:', e)
+      return false
+    }
+  }, [limparSessaoLocal])
+
   const espelharUsuarioLocal = useCallback(async (firebaseUser, signupExtras = null) => {
     const existente = await usuarioService.buscarUsuarioPorFirebaseUid(firebaseUser.uid)
     const initialPhone = signupExtras?.telefone ?? firebaseUser.phoneNumber ?? null
@@ -92,36 +165,80 @@ export function AuthProvider({ children }) {
 
   /**
    * Sessão persiste via SDK Firebase (`browserLocalPersistence` em
-   * `services/firebase/config.js`). Aqui só escutamos o estado — não
-   * precisamos hidratar manualmente.
+   * `services/firebase/config.js`). Aqui escutamos o estado e, adicionalmente,
+   * hidratamos do SQLite local **antes** do Firebase responder — viabilizando
+   * acesso offline a quem já logou em boot anterior.
+   *
+   * Regra de decisão no listener:
+   *   - Firebase traz usuário             → espelha normal (online/retornando).
+   *   - Firebase traz null + offline + sessão local ativa → mantém local
+   *     (não expulsa o usuário porque a rede caiu).
+   *   - Firebase traz null + online + sessão local ativa → desloga normalmente
+   *     (significa que signOut foi chamado em outro lugar ou token expirou).
+   *   - Firebase traz null + sem sessão local → deslogado de fato.
    */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      try {
-        if (firebaseUser) {
-          // Bug #1: pula se um fluxo explícito de cadastrar/login já está sincronizando
-          if (syncingRef.current) return
-          const local = await espelharUsuarioLocal(firebaseUser)
-          setUsuario(local)
+    let cancelado = false
+    const inicializarCleanupRef = { current: null }
 
-          // Sync automático no login (decision ratificada 05/08):
-          // pull traz mudanças remotas; push envia alterações locais.
-          // Fire-and-forget — não bloqueia navegação, SyncIndicator
-          // mostra progresso no header global.
-          if (navigator.onLine) {
-            sincronizarAgora()
-              .then(() => console.log('[AuthContext] Sync automática OK'))
-              .catch(err => console.warn('[AuthContext] Sync automática falhou:', err))
-          }
-        } else {
-          setUsuario(null)
-        }
-      } finally {
-        setCarregando(false)
+    async function inicializar() {
+      // Hidratação local first — não bloqueia o listener Firebase.
+      const hidratou = await hidratarSessaoLocal()
+      // Se conseguiu hidratar mas esse boot efetivamente não tem sessão no
+      // Firebase (off-line), `carregando` já pode ir para false para liberar
+      // a navegação; o listener confirmará logo que a rede voltar.
+      if (hidratou) {
+        if (!cancelado) setCarregando(false)
       }
-    })
-    return unsubscribe
-  }, [espelharUsuarioLocal])
+
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (cancelado) return
+        try {
+          if (firebaseUser) {
+            // Bug #1: pula se um fluxo explícito de cadastrar/login já está sincronizando
+            if (syncingRef.current) return
+            const local = await espelharUsuarioLocal(firebaseUser)
+            setUsuario(local)
+            // Persistir sessão local para próximo boot offline.
+            await persistirSessaoLocal(local?.uuid)
+
+            // Sync automático no login (decision ratificada 05/08):
+            // pull traz mudanças remotas; push envia alterações locais.
+            // Fire-and-forget — não bloqueia navegação, SyncIndicator
+            // mostra progresso no header global.
+            if (navigator.onLine) {
+              sincronizarAgora()
+                .then(() => console.log('[AuthContext] Sync automática OK'))
+                .catch(err => console.warn('[AuthContext] Sync automática falhou:', err))
+            }
+          } else {
+            // Firebase sem usuário. Decide entre "offline com sessão local"
+            // (mantém) e "realmente deslogado" (limpa).
+            const offline = !navigator.onLine
+            if (offline && sessaoLocalAtivaRef.current) {
+              // Mantém o usuário hidratado localmente; só sinaliza fim do load.
+              return
+            }
+            // Online sem sessão Firebase OU sem sessão local: desloga de fato.
+            setUsuario(null)
+            await limparSessaoLocal()
+          }
+        } finally {
+          if (!cancelado) setCarregando(false)
+        }
+      })
+
+      // Cleanup guard: permite o return do useEffect acessar o unsubscribe.
+      inicializarCleanupRef.current = unsubscribe
+    }
+
+    inicializar()
+
+    return () => {
+      cancelado = true
+      if (inicializarCleanupRef.current) inicializarCleanupRef.current()
+    }
+  }, [espelharUsuarioLocal, hidratarSessaoLocal, persistirSessaoLocal, limparSessaoLocal])
 
   const login = useCallback(async (email, senha) => {
     try {
@@ -129,13 +246,14 @@ export function AuthProvider({ children }) {
       const cred = await signInWithEmailAndPassword(auth, email, senha)
       const local = await espelharUsuarioLocal(cred.user)
       setUsuario(local)
+      await persistirSessaoLocal(local?.uuid)
       return local
     } catch (err) {
       throw new Error(traduzirErroAuth(err))
     } finally {
       syncingRef.current = false
     }
-  }, [espelharUsuarioLocal])
+  }, [espelharUsuarioLocal, persistirSessaoLocal])
 
   /**
    * Cadastro via Firebase Auth + espelho local.
@@ -163,6 +281,7 @@ export function AuthProvider({ children }) {
         { telefone, cpf },
       )
       setUsuario(local)
+      await persistirSessaoLocal(local?.uuid)
       return local
     } catch (mirrorErr) {
       // Bug #5: tentar rollback da conta Firebase para não deixar usuário parcial
@@ -180,12 +299,20 @@ export function AuthProvider({ children }) {
     } finally {
       syncingRef.current = false
     }
-  }, [espelharUsuarioLocal])
+  }, [espelharUsuarioLocal, persistirSessaoLocal])
 
   const logout = useCallback(async () => {
-    await signOut(auth)
+    // Limpa a sessão local FIRST: quando signOut disparar onAuthStateChanged
+    // com null, o listener saberá que precisa deslogar de fato (em vez de
+    // manter "offline com sessão local ativa").
+    await limparSessaoLocal()
+    try {
+      await signOut(auth)
+    } catch (e) {
+      console.warn('[AuthContext] signOut Firebase falhou:', e)
+    }
     setUsuario(null)
-  }, [])
+  }, [limparSessaoLocal])
 
   const atualizarPerfil = useCallback(async (dados) => {
     let atualizado

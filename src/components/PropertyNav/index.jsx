@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { key: 'reproducao', label: 'Reprodução', icone: '🤰' },
   { key: 'leite',      label: 'Leite',      icone: '🥛' },
   { key: 'corte',      label: 'Corte',      icone: '🥩' },
+  { key: 'financeiro', label: 'Finanças',   icone: '💰' },
 ]
 
 /**

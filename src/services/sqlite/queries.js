@@ -193,6 +193,10 @@ export async function inserirAnimal(dados) {
       timestamp,
     ],
   )
+  // Atualiza valor_compra separadamente (coluna adicionada via migration)
+  if (dados.valor_compra !== undefined) {
+    await executar(db, 'UPDATE animais SET valor_compra = ? WHERE uuid = ?', [dados.valor_compra, uuid])
+  }
   return uuid
 }
 
@@ -202,7 +206,7 @@ export async function atualizarAnimal(uuid, dados) {
   const campos = []
   const params = []
 
-  const editaveis = ['nome', 'id_interno', 'id_fisico', 'especie', 'raca', 'sexo', 'data_nascimento', 'peso_inicial', 'pelagem', 'genetica', 'origem', 'mae_uuid', 'pai_uuid', 'status', 'peso_abate_estimado', 'data_abate_estimada']
+  const editaveis = ['nome', 'id_interno', 'id_fisico', 'especie', 'raca', 'sexo', 'data_nascimento', 'peso_inicial', 'pelagem', 'genetica', 'origem', 'mae_uuid', 'pai_uuid', 'status', 'peso_abate_estimado', 'data_abate_estimada', 'valor_compra']
   editaveis.forEach(campo => {
     if (dados[campo] !== undefined) {
       campos.push(`${campo} = ?`)
@@ -717,7 +721,7 @@ export async function marcarSincronizado(tabela, uuid) {
 }
 
 export async function contarPendentes() {
-  // Soma registros com sync_status='novo' ou 'modificado' em todas as 11
+  // Soma registros com sync_status='novo' ou 'modificado' em todas as
   // tabelas replicadas. Soft-deletes têm sync_status='modificado' também,
   // então contam aqui — correto, pois o push precisa replicá-los.
   const db = getDb()
@@ -733,6 +737,9 @@ export async function contarPendentes() {
     'movimentacoes_local',
     'reproducao',
     'producao_leite',
+    'notificacoes',
+    'transacoes_financeiras',
+    'baixas',
   ]
   let total = 0
   for (const tabela of tabelas) {
@@ -2194,4 +2201,357 @@ export async function serieMensalPropriedade(propriedadeUuid, meses = 12) {
 // Sync helpers genéricos (listarPendentes, marcarSincronizado, upsertLocal) em queries.js
 // já cobrem transacoes_financeiras por nome de tabela — não precisamos de wrappers específicos.
 // Ver pullEngine.js:69 (upsertLocal) e queries.js:699 (listarPendentes).
+
+// Atualizar transação existente (mantém sync_status='modificado' para push)
+export async function atualizarTransacao(uuid, dados) {
+  const db = getDb()
+  const timestamp = agora()
+  const campos = []
+  const params = []
+  if (dados.categoria_uuid !== undefined) { campos.push('categoria_uuid = ?'); params.push(dados.categoria_uuid) }
+  if (dados.tipo !== undefined) { campos.push('tipo = ?'); params.push(dados.tipo) }
+  if (dados.descricao !== undefined) { campos.push('descricao = ?'); params.push(dados.descricao || null) }
+  if (dados.valor !== undefined) { campos.push('valor = ?'); params.push(dados.valor) }
+  if (dados.data !== undefined) { campos.push('data = ?'); params.push(dados.data) }
+  if (dados.animal_uuid !== undefined) { campos.push('animal_uuid = ?'); params.push(dados.animal_uuid || null) }
+  if (campos.length === 0) return
+  campos.push('updated_at = ?', "sync_status = 'modificado'")
+  params.push(timestamp, uuid)
+  await executar(
+    db,
+    `UPDATE transacoes_financeiras SET ${campos.join(', ')} WHERE uuid = ?`,
+    params,
+  )
+}
+
+// ─── NOTIFICACOES (Sprint 11) ───────────────────────────────────────────────
+
+export async function inserirNotificacao(dados) {
+  const db = getDb()
+  const uuid = dados.uuid || gerarUUID()
+  const timestamp = agora()
+  await executar(
+    db,
+    `INSERT OR IGNORE INTO notificacoes
+     (uuid, propriedade_uuid, usuario_uuid, tipo, titulo, descricao, nivel,
+      modulo, referencia_uuid, lida, created_at, updated_at, sync_status, deleted)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 'novo', 0)`,
+    [
+      uuid,
+      dados.propriedade_uuid,
+      dados.usuario_uuid,
+      dados.tipo,
+      dados.titulo,
+      dados.descricao || null,
+      dados.nivel,
+      dados.modulo,
+      dados.referencia_uuid || null,
+      timestamp,
+      timestamp,
+    ],
+  )
+  return uuid
+}
+
+export async function buscarNotificacao(uuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    'SELECT * FROM notificacoes WHERE uuid = ?',
+    [uuid],
+  )
+  return result.rows.length > 0 ? result.rows.item(0) : null
+}
+
+export async function listarNaoLidasPropriedade(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT * FROM notificacoes
+     WHERE propriedade_uuid = ? AND lida = 0 AND deleted = 0
+     ORDER BY created_at DESC`,
+    [propriedadeUuid],
+  )
+  return rowsToArray(result)
+}
+
+export async function listarTodasPropriedade(propriedadeUuid, filtros = {}) {
+  const db = getDb()
+  const where = ['propriedade_uuid = ?', 'deleted = 0']
+  const params = [propriedadeUuid]
+  if (filtros.modulo) {
+    where.push('modulo = ?')
+    params.push(filtros.modulo)
+  }
+  if (filtros.nivel) {
+    where.push('nivel = ?')
+    params.push(filtros.nivel)
+  }
+  if (filtros.lida !== undefined && filtros.lida !== null) {
+    where.push('lida = ?')
+    params.push(filtros.lida ? 1 : 0)
+  }
+  const result = await executar(
+    db,
+    `SELECT * FROM notificacoes
+     WHERE ${where.join(' AND ')}
+     ORDER BY created_at DESC`,
+    params,
+  )
+  return rowsToArray(result)
+}
+
+export async function contarNaoLidasPropriedade(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT COUNT(*) AS total FROM notificacoes
+     WHERE propriedade_uuid = ? AND lida = 0 AND deleted = 0`,
+    [propriedadeUuid],
+  )
+  const row = result.rows.length > 0 ? result.rows.item(0) : { total: 0 }
+  return row.total || 0
+}
+
+export async function marcarNotificacaoLida(uuid) {
+  const db = getDb()
+  const timestamp = agora()
+  await executar(
+    db,
+    `UPDATE notificacoes
+     SET lida = 1, updated_at = ?, sync_status = 'modificado'
+     WHERE uuid = ?`,
+    [timestamp, uuid],
+  )
+}
+
+export async function marcarTodasNotificacoesLidas(propriedadeUuid) {
+  const db = getDb()
+  const timestamp = agora()
+  await executar(
+    db,
+    `UPDATE notificacoes
+     SET lida = 1, updated_at = ?, sync_status = 'modificado'
+     WHERE propriedade_uuid = ? AND lida = 0 AND deleted = 0`,
+    [timestamp, propriedadeUuid],
+  )
+}
+
+export async function excluirNotificacao(uuid) {
+  const db = getDb()
+  const timestamp = agora()
+  await executar(
+    db,
+    `UPDATE notificacoes
+     SET deleted = 1, updated_at = ?, sync_status = 'modificado'
+     WHERE uuid = ?`,
+    [timestamp, uuid],
+  )
+}
+
+export async function buscarNotificacaoPorTipoRef(propriedadeUuid, tipo, referenciaUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT * FROM notificacoes
+     WHERE propriedade_uuid = ? AND tipo = ? AND referencia_uuid = ? AND deleted = 0`,
+    [propriedadeUuid, tipo, referenciaUuid],
+  )
+  return result.rows.length > 0 ? result.rows.item(0) : null
+}
+
+export async function excluirNotificacoesPorTipoRef(propriedadeUuid, tipo, referenciaUuid) {
+  const db = getDb()
+  const timestamp = agora()
+  await executar(
+    db,
+    `UPDATE notificacoes
+     SET deleted = 1, updated_at = ?, sync_status = 'modificado'
+     WHERE propriedade_uuid = ? AND tipo = ? AND referencia_uuid = ? AND deleted = 0`,
+    [timestamp, propriedadeUuid, tipo, referenciaUuid],
+  )
+}
+
+// ─── BAIXAS (Sprint 10: registro de venda/morte/consumo — RF08) ──────────
+
+export async function inserirBaixa(dados) {
+  const db = getDb()
+  const uuid = dados.uuid || gerarUUID()
+  const timestamp = agora()
+  const statusMap = { venda: 'vendido', morte: 'morto', consumo: 'consumido' }
+  const novoStatus = statusMap[dados.tipo] || 'ativo'
+
+  await executar(
+    db,
+    `INSERT INTO baixas
+     (uuid, animal_uuid, propriedade_uuid, tipo, valor_recebido, data, motivo,
+      created_at, updated_at, synced_at, sync_status, deleted)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, null, 'novo', 0)`,
+    [
+      uuid,
+      dados.animal_uuid,
+      dados.propriedade_uuid,
+      dados.tipo,
+      dados.valor_recebido || 0,
+      dados.data,
+      dados.motivo || null,
+      timestamp,
+      timestamp,
+    ],
+  )
+
+  // Atualiza o status do animal
+  await executar(
+    db,
+    `UPDATE animais SET status = ?, updated_at = ?, sync_status = 'modificado'
+     WHERE uuid = ?`,
+    [novoStatus, timestamp, dados.animal_uuid],
+  )
+
+  return uuid
+}
+
+export async function buscarBaixa(uuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT b.*, a.nome AS animal_nome, a.id_fisico
+     FROM baixas b
+     LEFT JOIN animais a ON b.animal_uuid = a.uuid
+     WHERE b.uuid = ?`,
+    [uuid],
+  )
+  return result.rows.length > 0 ? result.rows.item(0) : null
+}
+
+export async function listarBaixasPropriedade(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT b.*, a.nome AS animal_nome, a.id_fisico
+     FROM baixas b
+     LEFT JOIN animais a ON b.animal_uuid = a.uuid
+     WHERE b.propriedade_uuid = ? AND b.deleted = 0
+     ORDER BY b.data DESC`,
+    [propriedadeUuid],
+  )
+  return rowsToArray(result)
+}
+
+export async function excluirBaixa(uuid) {
+  const db = getDb()
+  const timestamp = agora()
+  await executar(
+    db,
+    `UPDATE baixas
+     SET deleted = 1, updated_at = ?, sync_status = 'modificado'
+     WHERE uuid = ?`,
+    [timestamp, uuid],
+  )
+}
+
+// ─── CUSTO ACUMULADO E LUCRATIVIDADE (RF08) ──────────────────────────────
+
+// Custo acumulado de um animal: valor_compra + soma de vacinas + soma de medicamentos
+export async function custoAcumuladoAnimal(animalUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT a.valor_compra,
+            COALESCE((SELECT COUNT(*) FROM vacinas v WHERE v.animal_uuid = a.uuid), 0) AS qtd_vacinas,
+            COALESCE((SELECT COUNT(*) FROM medicamentos m WHERE m.animal_uuid = a.uuid), 0) AS qtd_medicamentos
+     FROM animais a
+     WHERE a.uuid = ?`,
+    [animalUuid],
+  )
+  if (result.rows.length === 0) return null
+  const row = result.rows.item(0)
+  return {
+    valor_compra: row.valor_compra || 0,
+    qtd_vacinas: row.qtd_vacinas,
+    qtd_medicamentos: row.qtd_medicamentos,
+  }
+}
+
+// Custo acumulado para todos os animais da propriedade (para relatório)
+export async function custoAcumuladoPropriedade(propriedadeUuid) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT a.uuid AS animal_uuid, a.nome, a.id_fisico, a.valor_compra,
+            COALESCE(vac.total, 0) AS qtd_vacinas,
+            COALESCE(med.total, 0) AS qtd_medicamentos
+     FROM animais a
+     LEFT JOIN (
+       SELECT animal_uuid, COUNT(*) AS total
+       FROM vacinas
+       GROUP BY animal_uuid
+     ) vac ON a.uuid = vac.animal_uuid
+     LEFT JOIN (
+       SELECT animal_uuid, COUNT(*) AS total
+       FROM medicamentos
+       GROUP BY animal_uuid
+     ) med ON a.uuid = med.animal_uuid
+     WHERE a.propriedade_uuid = ? AND a.deleted = 0 AND a.status = 'ativo'
+     ORDER BY COALESCE(a.valor_compra, 0) DESC`,
+    [propriedadeUuid],
+  )
+  return rowsToArray(result)
+}
+
+// Resumo financeiro completo por animal: valor_compra + receitas/despesas vinculadas + lucratividade
+export async function lucratividadePropriedade(propriedadeUuid, cotacaoKg) {
+  const db = getDb()
+  const result = await executar(
+    db,
+    `SELECT a.uuid AS animal_uuid, a.nome, a.id_fisico, a.valor_compra,
+            (SELECT MAX(p.peso) FROM pesagens p WHERE p.animal_uuid = a.uuid) AS peso_atual,
+            COALESCE(vac.total, 0) AS qtd_vacinas,
+            COALESCE(med.total, 0) AS qtd_medicamentos,
+            COALESCE(rec.receitas, 0) AS receitas_vinculadas,
+            COALESCE(des.despesas, 0) AS despesas_vinculadas
+     FROM animais a
+     LEFT JOIN (
+       SELECT animal_uuid, COUNT(*) AS total
+       FROM vacinas
+       GROUP BY animal_uuid
+     ) vac ON a.uuid = vac.animal_uuid
+     LEFT JOIN (
+       SELECT animal_uuid, COUNT(*) AS total
+       FROM medicamentos
+       GROUP BY animal_uuid
+     ) med ON a.uuid = med.animal_uuid
+     LEFT JOIN (
+       SELECT animal_uuid, SUM(valor) AS receitas
+       FROM transacoes_financeiras
+       WHERE tipo = 'receita' AND deleted = 0
+       GROUP BY animal_uuid
+     ) rec ON a.uuid = rec.animal_uuid
+     LEFT JOIN (
+       SELECT animal_uuid, SUM(valor) AS despesas
+       FROM transacoes_financeiras
+       WHERE tipo = 'despesa' AND deleted = 0
+       GROUP BY animal_uuid
+     ) des ON a.uuid = des.animal_uuid
+     WHERE a.propriedade_uuid = ? AND a.deleted = 0 AND a.status = 'ativo'
+     ORDER BY a.nome ASC`,
+    [propriedadeUuid],
+  )
+  const rows = rowsToArray(result)
+  const cotacao = cotacaoKg || 0
+  return rows.map(r => {
+    const valorCompra = r.valor_compra || 0
+    const valorMercado = (r.peso_atual || 0) * cotacao
+    const receitas = r.receitas_vinculadas || 0
+    const despesas = r.despesas_vinculadas || 0
+    const lucro = (receitas + valorMercado) - (valorCompra + despesas)
+    return {
+      ...r,
+      custo_acumulado: valorCompra,
+      valor_mercado: valorMercado,
+      lucro,
+      status_lucratividade: lucro > 0 ? 'lucro' : lucro < 0 ? 'prejuizo' : 'empate',
+    }
+  })
+}
 

@@ -3,12 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAnimais } from '../../hooks/useAnimais'
 import { useFinanceiroPropriedade } from '../../hooks/useFinanceiro'
 import GraficoBarra from '../../components/GraficoBarra'
-import PropertyNav from '../../components/PropertyNav/index.jsx'
+import PropertyNav from '../../components/PropertyNav'
 import styles from './Financeiro.module.css'
-
-function formatarData(data) {
-  return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR')
-}
 
 function formatarMoeda(v) {
   const n = Number(v || 0)
@@ -36,6 +32,7 @@ const TABS = [
   { key: 'dashboard', label: 'Dashboard', path: '' },
   { key: 'listar', label: 'Listar', path: 'listar' },
   { key: 'por-animal', label: 'Por Animal', path: 'por-animal' },
+  { key: 'relatorios', label: 'Relatórios', path: 'relatorios' },
 ]
 
 // ─── Componente Principal — Dashboard Financeiro ───────────────────────────
@@ -43,7 +40,7 @@ export default function Financeiro() {
   const navigate = useNavigate()
   const { propriedadeId } = useParams()
   const { animais } = useAnimais(propriedadeId)
-  const { transacoes, categorias, saldo, registrar, carregando, erro, carregar } = useFinanceiroPropriedade(propriedadeId)
+  const { transacoes, categorias, saldo, registrar, carregando, erro } = useFinanceiroPropriedade(propriedadeId)
   const [activeTab, setActiveTab] = useState('financeiro')
   const [mostrarForm, setMostrarForm] = useState(false)
   const [sucesso, setSucesso] = useState('')
@@ -316,11 +313,14 @@ export default function Financeiro() {
               </div>
             )}
 
-            {/* ─── Gráfico de despesas por categoria (mês atual) ─────────────── */}
+            // Gráfico de despesas por categoria (mês atual)
             {resumoMesAtual.despesas.length > 0 && (
               <div className={styles.graficoWrapper}>
                 <div className={styles.graficoTitle}>Despesas por categoria (mês atual)</div>
-                <GraficoBarra dados={resumoMesAtual.despesas} cor="#e74c3c" />
+                <GraficoBarra
+                  data={resumoMesAtual.despesas.map(c => ({ rotulo: c.nome, valor: c.total }))}
+                  cor="#e74c3c"
+                />
                 <div className={styles.categoriaLista}>
                   {resumoMesAtual.despesas.map(c => (
                     <div key={c.nome} className={styles.categoriaLinha}>
@@ -338,7 +338,10 @@ export default function Financeiro() {
             {resumoMesAtual.receitas.length > 0 && (
               <div className={styles.graficoWrapper}>
                 <div className={styles.graficoTitle}>Receitas por categoria (mês atual)</div>
-                <GraficoBarra dados={resumoMesAtual.receitas} cor="#82c341" />
+                <GraficoBarra
+                  data={resumoMesAtual.receitas.map(c => ({ rotulo: c.nome, valor: c.total }))}
+                  cor="#82c341"
+                />
                 <div className={styles.categoriaLista}>
                   {resumoMesAtual.receitas.map(c => (
                     <div key={c.nome} className={styles.categoriaLinha}>

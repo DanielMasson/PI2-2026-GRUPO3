@@ -33,6 +33,11 @@ export async function excluirTransacao(uuid) {
   return await sqlite.excluirTransacao(uuid)
 }
 
+export async function atualizarTransacao(uuid, dados) {
+  await sqlite.atualizarTransacao(uuid, dados)
+  return await sqlite.buscarTransacao(uuid)
+}
+
 export async function resumoPropriedade(propriedadeUuid) {
   return await sqlite.saldoPropriedade(propriedadeUuid)
 }
@@ -47,4 +52,17 @@ export async function resumoPorAnimal(propriedadeUuid, dataInicio, dataFim) {
 
 export async function serieMensal(propriedadeUuid, meses) {
   return await sqlite.serieMensalPropriedade(propriedadeUuid, meses)
+}
+
+// RF08: custo acumulado e lucratividade
+export async function custoAcumuladoAnimal(animalUuid) {
+  return await sqlite.custoAcumuladoAnimal(animalUuid)
+}
+
+export async function custoAcumuladoPropriedade(propriedadeUuid) {
+  return await sqlite.custoAcumuladoPropriedade(propriedadeUuid)
+}
+
+export async function lucratividadePropriedade(propriedadeUuid, cotacaoKg) {
+  return await sqlite.lucratividadePropriedade(propriedadeUuid, cotacaoKg)
 }

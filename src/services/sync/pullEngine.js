@@ -39,6 +39,9 @@ const TABELAS_SYNC = [
   { tabela: 'movimentacoes_local', subcollection: 'movimentacoes' },
   { tabela: 'reproducao', subcollection: 'reproducao' },
   { tabela: 'producao_leite', subcollection: 'producao_leite' },
+  { tabela: 'transacoes_financeiras', subcollection: 'transacoes_financeiras' },
+  { tabela: 'notificacoes', subcollection: 'notificacoes' },
+  { tabela: 'baixas', subcollection: 'baixas' },
 ]
 
 const META_LAST_PULL = 'last_pull_at'

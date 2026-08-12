@@ -244,6 +244,41 @@ const SQL_TABELAS = [
     sync_status TEXT DEFAULT 'novo',
     deleted INTEGER DEFAULT 0
   )`,
+
+  // ── 16. notificacoes ── (Sprint 11: alertas push-local de eventos)
+  `CREATE TABLE IF NOT EXISTS notificacoes (
+    uuid TEXT PRIMARY KEY,
+    propriedade_uuid TEXT NOT NULL,
+    usuario_uuid TEXT,
+    tipo TEXT NOT NULL,
+    titulo TEXT NOT NULL,
+    descricao TEXT,
+    nivel TEXT DEFAULT 'info',
+    modulo TEXT,
+    referencia_uuid TEXT,
+    lida INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    synced_at TEXT,
+    sync_status TEXT DEFAULT 'novo',
+    deleted INTEGER DEFAULT 0
+  )`,
+
+  // ── 17. baixas ── (Sprint 10: registro de venda/morte/consumo — RF08)
+  `CREATE TABLE IF NOT EXISTS baixas (
+    uuid TEXT PRIMARY KEY,
+    animal_uuid TEXT NOT NULL,
+    propriedade_uuid TEXT NOT NULL,
+    tipo TEXT NOT NULL CHECK(tipo IN ('venda','morte','consumo')),
+    valor_recebido REAL DEFAULT 0,
+    data TEXT NOT NULL,
+    motivo TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    synced_at TEXT,
+    sync_status TEXT DEFAULT 'novo',
+    deleted INTEGER DEFAULT 0
+  )`,
 ]
 
 const SQL_INDEXES = [
@@ -279,6 +314,13 @@ const SQL_INDEXES = [
   'CREATE INDEX IF NOT EXISTS idx_transacoes_animal ON transacoes_financeiras(animal_uuid, data)',
   'CREATE INDEX IF NOT EXISTS idx_transacoes_categoria ON transacoes_financeiras(categoria_uuid)',
   'CREATE INDEX IF NOT EXISTS idx_transacoes_sync ON transacoes_financeiras(sync_status)',
+  // Sprint 11: índices de notificações
+  'CREATE INDEX IF NOT EXISTS idx_notificacoes_propriedade ON notificacoes(propriedade_uuid, lida)',
+  'CREATE INDEX IF NOT EXISTS idx_notificacoes_sync ON notificacoes(sync_status)',
+  // Sprint 10: índices de baixas
+  'CREATE INDEX IF NOT EXISTS idx_baixas_propriedade ON baixas(propriedade_uuid, data)',
+  'CREATE INDEX IF NOT EXISTS idx_baixas_animal ON baixas(animal_uuid)',
+  'CREATE INDEX IF NOT EXISTS idx_baixas_sync ON baixas(sync_status)',
 ]
 
 export async function criarTabelas(db) {
@@ -315,6 +357,8 @@ const SQL_MIGRACOES = [
   // Sprint 6: peso de abate estimado em animais (contagem regressiva no dashboard)
   "ALTER TABLE animais ADD COLUMN peso_abate_estimado REAL",
   "ALTER TABLE animais ADD COLUMN data_abate_estimada TEXT",
+  // Sprint 10/RF08: valor de compra do animal para cálculo de lucratividade
+  "ALTER TABLE animais ADD COLUMN valor_compra REAL",
   // Sync Firebase: tabela key/value para metadados de sincronização
   // (ex.: last_pull_at). Idempotente: IF NOT EXISTS evita duplicação.
   `CREATE TABLE IF NOT EXISTS _sync_meta (

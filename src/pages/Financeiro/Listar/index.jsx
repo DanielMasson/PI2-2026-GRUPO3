@@ -70,10 +70,7 @@ function AutocompleteAnimal({ animais, valor, onSelect, onClear }) {
         <button
           type="button"
           onClick={handleClear}
-          style={{
-            position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-            background: 'none', border: 'none', color: '#9b92b8', cursor: 'pointer', fontSize: 14
-          }}
+          className={styles.autocompleteClear}
           aria-label="Limpar seleção"
         >
           ✕
@@ -97,7 +94,7 @@ function AutocompleteAnimal({ animais, valor, onSelect, onClear }) {
       )}
       {aberto && termo && filtrados.length === 0 && (
         <div className={styles.autocompleteLista}>
-          <div className={styles.autocompleteItem} style={{ cursor: 'default', color: '#9b92b8' }}>
+          <div className={`${styles.autocompleteItem} ${styles.autocompleteItemVazio}`}>
             Nenhum animal encontrado
           </div>
         </div>
@@ -270,7 +267,7 @@ export default function FinanceiroListar() {
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+        <div className={styles.filtrosAcoes}>
           <button type="submit" className={styles.salvarBtn}>Aplicar</button>
           {filtrosAtivos && (
             <button type="button" className={styles.cancelarBtn} onClick={handleLimpar}>
@@ -344,7 +341,7 @@ export default function FinanceiroListar() {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', gap: 6 }}>
+                    <div className={styles.acaoBotoes}>
                       <button
                         className={styles.btnSecundario}
                         type="button"

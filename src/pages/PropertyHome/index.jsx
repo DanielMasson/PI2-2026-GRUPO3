@@ -141,6 +141,8 @@ function PropertyHome() {
       navigate(`/propriedade/${propriedadeId}/producao-leite`)
     } else if (key === 'corte') {
       navigate(`/propriedade/${propriedadeId}/corte`)
+    } else if (key === 'financeiro') {
+      navigate(`/propriedade/${propriedadeId}/financeiro`)
     } else {
       setActiveTab(key)
     }

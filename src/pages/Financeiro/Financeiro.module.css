@@ -364,12 +364,6 @@
   letter-spacing: 0.06em;
 }
 
-.graficoSvg {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
 .categoriaLista {
   display: flex;
   flex-direction: column;
@@ -459,17 +453,16 @@
   margin-top: 2px;
 }
 
-.transacaoValor {
+.transacaoValorReceita {
+  color: #82c341;
   font-weight: 700;
   white-space: nowrap;
 }
 
-.transacaoValorReceita {
-  color: #82c341;
-}
-
 .transacaoValorDespesa {
   color: #e74c3c;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .categoriaBadge {
@@ -650,14 +643,6 @@
   white-space: nowrap;
 }
 
-.detalheValorReceita {
-  color: #82c341;
-}
-
-.detalheValorDespesa {
-  color: #e74c3c;
-}
-
 /* ─── Toasts + emptyState ──────────────────────────────────────────────────── */
 .successToast {
   background-color: rgba(78, 138, 26, 0.15);
@@ -706,6 +691,236 @@
   margin-top: var(--space-lg);
   margin-bottom: var(--space-md);
   flex-wrap: wrap;
+}
+
+.sectionTitleSmall {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #f0ecff;
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ─── Botões primário/secundário de ação inline ─────────────────────────────── */
+.btnPrimario {
+  padding: 6px 12px;
+  background-color: rgba(200, 169, 126, 0.15);
+  border: 1px solid rgba(200, 169, 126, 0.3);
+  border-radius: var(--radius-sm);
+  color: #c8a97e;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.btnPrimario:hover {
+  background-color: rgba(200, 169, 126, 0.25);
+}
+
+.btnPrimario:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSecundario {
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  color: #9b92b8;
+  font-size: 11px;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btnSecundario:hover {
+  color: #f0ecff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ─── Ação inline (confirmação de exclusão dentro da linha) ─────────────────── */
+.acaoInline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.acaoInlineLabel {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.acaoInlineBotoes {
+  display: flex;
+  gap: 6px;
+}
+
+/* ─── Autocomplete de animal (Listar) ───────────────────────────────────────── */
+.autocompleteWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.autocompleteInput {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  color: #f0ecff;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family);
+  outline: none;
+  transition: border-color var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.autocompleteInput:focus {
+  border-color: #c8a97e;
+}
+
+.autocompleteInput::placeholder {
+  color: rgba(155, 146, 184, 0.4);
+}
+
+.autocompleteLista {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: #1a241a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.autocompleteItem {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #f0ecff;
+  font-size: var(--font-size-sm);
+  transition: background-color var(--transition-fast);
+}
+
+.autocompleteItem:last-child {
+  border-bottom: none;
+}
+
+.autocompleteItem:hover {
+  background-color: rgba(200, 169, 126, 0.08);
+}
+
+.autocompleteItemMeta {
+  font-size: 11px;
+  color: #9b92b8;
+  margin-top: 2px;
+}
+
+.autocompleteItemVazio {
+  cursor: default;
+  color: #9b92b8;
+}
+
+.autocompleteClear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9b92b8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+}
+
+.autocompleteClear:hover {
+  color: #f0ecff;
+}
+
+/* ─── Linha de ações (filtro, tabela) ───────────────────────────────────────── */
+.filtrosAcoes {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.acaoBotoes {
+  display: flex;
+  gap: 6px;
+}
+
+/* ─── Lucratividade (PorAnimal / Relatorios) ────────────────────────────────── */
+.lucratividadeSection {
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.lucratividadeGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+@media (min-width: 560px) {
+  .lucratividadeGrid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+.lucratividadeCard {
+  background-color: #1a241a;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 4px solid #6b6280;
+  padding: var(--space-md);
+}
+
+.lucroCard {
+  border-left-color: #82c341;
+}
+
+.prejuizoCard {
+  border-left-color: #e74c3c;
+}
+
+.empateCard {
+  border-left-color: #ffb74d;
+}
+
+.lucratividadeNome {
+  font-size: 11px;
+  color: #9b92b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lucratividadeValor {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #f0ecff;
+  margin-bottom: 4px;
+}
+
+.lucratividadeDetalhe {
+  font-size: 11px;
+  color: #9b92b8;
 }
 
 /* ─── Responsive ────────────────────────────────────────────────────────── */

@@ -30,6 +30,11 @@ import CorteGraficos from './pages/Corte/Graficos'
 import CorteRanking from './pages/Corte/Ranking'
 import CorteHistorico from './pages/Corte/Historico'
 import CorteAlertas from './pages/Corte/Alertas'
+import Financeiro from './pages/Financeiro'
+import FinanceiroListar from './pages/Financeiro/Listar'
+import FinanceiroPorAnimal from './pages/Financeiro/PorAnimal'
+import FinanceiroRelatorios from './pages/Financeiro/Relatorios'
+import FinanceiroDetalhe from './pages/Financeiro/Detalhe'
 import Configuracoes from './pages/Configuracoes'
 import SyncIndicator from './components/SyncIndicator'
 import './styles/login_global.css'
@@ -80,6 +85,11 @@ function AppRoutes() {
       <Route path="/propriedade/:propriedadeId/corte/ranking" element={<RotaPrivadaComShell><CorteRanking /></RotaPrivadaComShell>} />
       <Route path="/propriedade/:propriedadeId/corte/historico" element={<RotaPrivadaComShell><CorteHistorico /></RotaPrivadaComShell>} />
       <Route path="/propriedade/:propriedadeId/corte/alertas" element={<RotaPrivadaComShell><CorteAlertas /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/financeiro" element={<RotaPrivadaComShell><Financeiro /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/financeiro/listar" element={<RotaPrivadaComShell><FinanceiroListar /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/financeiro/por-animal" element={<RotaPrivadaComShell><FinanceiroPorAnimal /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/financeiro/relatorios" element={<RotaPrivadaComShell><FinanceiroRelatorios /></RotaPrivadaComShell>} />
+      <Route path="/propriedade/:propriedadeId/financeiro/detalhe/:transacaoId" element={<RotaPrivadaComShell><FinanceiroDetalhe /></RotaPrivadaComShell>} />
       <Route path="/configuracoes" element={<RotaPrivadaComShell><Configuracoes /></RotaPrivadaComShell>} />
 
       {/* Redirecionamento padrão */}

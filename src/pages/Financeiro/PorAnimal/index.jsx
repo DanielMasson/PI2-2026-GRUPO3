@@ -112,7 +112,7 @@ export default function FinanceiroPorAnimal() {
             onChange={e => setCotacaoKg(e.target.value)}
           />
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+        <div className={styles.filtrosAcoes}>
           <button type="submit" className={styles.salvarBtn}>Aplicar</button>
           {(aplicados.dataInicio || aplicados.dataFim) && (
             <button type="button" className={styles.cancelarBtn} onClick={handleLimpar}>
