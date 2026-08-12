@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import styles from './Corte.module.css'
+import PropertyNav from '../../components/PropertyNav/index.jsx'
 
 // Layout compartilhado das 4 sub-páginas de análise de corte (Sprint 8.5).
 // Renderiza topbar (back + título) + barra de 5 tabs navigando entre rotas irmãs.
@@ -56,6 +57,8 @@ export default function SubpageLayout({ activeTab, children }) {
       <div className={styles.inner}>
         {children}
       </div>
+
+      <PropertyNav />
     </div>
   )
 }

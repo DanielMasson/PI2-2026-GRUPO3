@@ -11,5 +11,13 @@
       "PACKAGE_NAME": "br.edu.ifc.propriedadeinteligente"
     }
   },
-  "dependent_plugins": {}
+  "dependent_plugins": {
+    "cordova-plugin-device": {
+      "PACKAGE_NAME": "br.edu.ifc.propriedadeinteligente"
+    },
+    "cordova-plugin-local-notification": {
+      "ANDROIDX_CORE_VERSION": "1.12.0",
+      "PACKAGE_NAME": "br.edu.ifc.propriedadeinteligente"
+    }
+  }
 }

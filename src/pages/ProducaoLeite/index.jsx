@@ -10,16 +10,12 @@ function formatarData(data) {
  return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR')
 }
 
-function formatarNumero(n) {
- return Number(n).toLocaleString('pt-BR')
-}
-
 // ─── Componente Principal ───────────────────────────────────────────────────
 function ProducaoLeite() {
  const navigate = useNavigate()
  const { propriedadeId } = useParams()
  const { animais, carregando } = useAnimais(propriedadeId)
- const { ordenhas, resumo, carregar: carregarOrdenhas } = useProducaoLeitePropriedade(propriedadeId)
+ const { ordenhas, resumo, recarregar: carregarOrdenhas } = useProducaoLeitePropriedade(propriedadeId)
  const [data, setData] = useState(new Date().toISOString().split('T')[0])
  const [registros, setRegistros] = useState({})
  const [sucesso, setSucesso] = useState('')
@@ -49,13 +45,12 @@ function ProducaoLeite() {
  }
 
  async function handleSalvar() {
-  const semOrdenha = vacasLactantes.filter(v => {
+  const comOrdenha = vacasLactantes.filter(v => {
    const r = registros[v.uuid] || {}
-   return !r.manha && !r.tarde
+   return r.manha || r.tarde
   })
-  if (semOrdenha.length > 0) {
-   const nomes = semOrdenha.map(v => v.nome).join(', ')
-   setErro(`Registre pelo menos uma ordenha para: ${nomes}`)
+  if (comOrdenha.length === 0) {
+   setErro('Registre pelo menos uma ordenha para uma vaca.')
    setTimeout(() => setErro(''), 4000)
    return
   }
@@ -63,22 +58,21 @@ function ProducaoLeite() {
   setSalvando(true)
   setErro('')
   try {
-   const pendentes = vacasLactantes
+   const pendentes = comOrdenha
     .map(v => {
      const r = registros[v.uuid] || {}
      const manha = parseFloat(r.manha) || 0
      const tarde = parseFloat(r.tarde) || 0
-     if (manha === 0 && tarde === 0) return null
      return {
       animal_uuid: v.uuid,
       propriedade_uuid: propriedadeId,
       data,
       manha_litros: manha,
       tarde_litros: tarde,
+      ccs: r.ccs ? parseInt(r.ccs) : null,
       observacao: r.observacao || null,
      }
     })
-    .filter(Boolean)
 
    for (const p of pendentes) {
     await producaoLeiteService.registrarOrdenha(p)

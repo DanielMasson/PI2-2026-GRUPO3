@@ -1,5 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="br.edu.ifc.propriedadeinteligente" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <feature name="Device">
+        <param name="android-package" value="org.apache.cordova.device.Device" />
+    </feature>
+    <feature name="LocalNotification">
+        <param name="android-package" value="de.appplant.cordova.plugin.localnotification.LocalNotification" />
+    </feature>
     <feature name="SQLitePlugin">
         <param name="android-package" value="io.sqlc.SQLitePlugin" />
     </feature>
@@ -14,6 +20,7 @@
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <preference name="loglevel" value="DEBUG" />
+    <preference name="GradlePluginKotlinEnabled" value="true" />
     <preference name="Orientation" value="portrait" />
     <preference name="AndroidStatusBarBackgroundColor" value="#1a241a" />
     <preference name="StatusBarOverlaysWebView" value="false" />
@@ -24,6 +31,7 @@
     <preference name="FadeSplashScreenDuration" value="500" />
     <preference name="android-minSdkVersion" value="24" />
     <preference name="android-targetSdkVersion" value="34" />
+    <preference name="android-compileSdkVersion" value="36" />
     <preference name="AndroidXEnabled" value="true" />
     <preference name="GradlePluginGoogleServicesEnabled" value="false" />
     <preference name="GradlePluginGoogleServicesVersion" value="4.3.15" />
