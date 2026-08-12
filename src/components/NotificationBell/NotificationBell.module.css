@@ -1,0 +1,81 @@
+/* NotificationBell — badge circular fixo abaixo do SyncIndicator */
+.bell {
+  position: fixed;
+  top: 128px;
+  right: 12px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: #0f1a0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  transition: transform 0.15s ease, background 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.bell:hover {
+  transform: scale(1.05);
+  background: #1a2a1a;
+}
+
+.bell:active {
+  transform: scale(0.95);
+}
+
+.bellAtivo {
+  border-color: rgba(231, 76, 60, 0.6);
+  background: #2a1010;
+}
+
+.icon {
+  line-height: 1;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #e74c3c;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #0f1a0f;
+}
+
+.tooltip {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  min-width: 160px;
+  padding: 8px 12px;
+  background: #1a2a1a;
+  color: #e8e8e8;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.bell:hover .tooltip,
+.bell:focus .tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
