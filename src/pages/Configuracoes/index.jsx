@@ -10,12 +10,8 @@ function Configuracoes() {
   const navigate = useNavigate()
   const { usuario, logout } = useAuth()
   const { propriedade: propriedadeAtiva, limparPropriedade } = usePropriedade()
-  const [sucesso, setSucesso] = useState('')
   const [membros, setMembros] = useState([])
   const [carregandoMembros, setCarregandoMembros] = useState(true)
-
-  // Estado das configurações
-  const [notificacoes, setNotificacoes] = useState(true)
 
   useEffect(() => {
     async function carregarMembros() {
@@ -50,8 +46,6 @@ function Configuracoes() {
       </header>
 
       <div className={styles.inner}>
-        {sucesso && <div className={styles.successToast}>{sucesso}</div>}
-
         {/* CONTA */}
         <div className={styles.section}>
           <div className={styles.sectionTitle}>Conta</div>
@@ -66,31 +60,6 @@ function Configuracoes() {
                 <span className={styles.profileName}>{usuario?.nome || 'Usuário'}</span>
                 <span className={styles.profileEmail}>{usuario?.email || ''}</span>
               </div>
-            </div>
-
-            <div className={styles.item} onClick={() => navigate('/configuracoes')}>
-              <span className={styles.itemIcon}>✏️</span>
-              <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Editar perfil</span>
-                <span className={styles.itemDesc}>Nome, e-mail, foto</span>
-              </div>
-              <span className={styles.itemArrow}>›</span>
-            </div>
-
-            <div className={styles.item}>
-              <span className={styles.itemIcon}>🔔</span>
-              <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Notificações</span>
-                <span className={styles.itemDesc}>Alertas de vacinas, partos, etc.</span>
-              </div>
-              <label className={styles.toggle} onClick={e => e.stopPropagation()}>
-                <input
-                  type="checkbox"
-                  checked={notificacoes}
-                  onChange={e => setNotificacoes(e.target.checked)}
-                />
-                <span className={styles.toggleSlider} />
-              </label>
             </div>
 
             <div className={styles.item} onClick={() => navigate('/esqueci-senha')}>
@@ -108,68 +77,41 @@ function Configuracoes() {
         <div className={styles.section}>
           <div className={styles.sectionTitle}>Propriedade</div>
           <div className={styles.sectionCard}>
-            <div className={styles.item}>
+            <div className={styles.itemStatic}>
               <span className={styles.itemIcon}>🏡</span>
               <div className={styles.itemContent}>
                 <span className={styles.itemLabel}>Dados da propriedade</span>
                 <span className={styles.itemDesc}>Nome, localização, tamanho</span>
               </div>
-              <span className={styles.itemRight}>
-                <span className={styles.itemValue}>{propriedadeAtiva?.nome || '—'}</span>
-                <span className={styles.itemArrow}>›</span>
-              </span>
+              <span className={styles.itemValue}>{propriedadeAtiva?.nome || '—'}</span>
             </div>
 
-            <div className={styles.item}>
+            <div className={styles.itemStatic}>
               <span className={styles.itemIcon}>👥</span>
               <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Gerenciar membros</span>
-                <span className={styles.itemDesc}>Convidar ou remover peões</span>
+                <span className={styles.itemLabel}>Membros</span>
+                <span className={styles.itemDesc}>Pessoas com acesso à propriedade</span>
               </div>
-              <span className={styles.itemRight}>
-                <span className={styles.itemValue}>
-                  {carregandoMembros ? '...' : `${totalMembros} membro${totalMembros !== 1 ? 's' : ''}`}
-                </span>
-                <span className={styles.itemArrow}>›</span>
-              </span>
-            </div>
-
-            <div className={styles.item}>
-              <span className={styles.itemIcon}>🌾</span>
-              <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Gerenciar lotes/áreas</span>
-                <span className={styles.itemDesc}>Cadastrar áreas da fazenda</span>
-              </div>
-              <span className={styles.itemRight}>
-                <span className={styles.itemValue}>— lotes</span>
-                <span className={styles.itemArrow}>›</span>
+              <span className={styles.itemValue}>
+                {carregandoMembros ? '...' : `${totalMembros} membro${totalMembros !== 1 ? 's' : ''}`}
               </span>
             </div>
           </div>
         </div>
 
-        {/* SINCRONIZAÇÃO — usa o hook useSync para dados reais */}
+        {/* SINCRONIZAÇÃO */}
         <SecaoSync />
 
         {/* SOBRE */}
         <div className={styles.section}>
           <div className={styles.sectionTitle}>Sobre</div>
           <div className={styles.sectionCard}>
-            <div className={styles.item}>
+            <div className={styles.itemStatic}>
               <span className={styles.itemIcon}>ℹ️</span>
               <div className={styles.itemContent}>
                 <span className={styles.itemLabel}>Versão</span>
               </div>
               <span className={styles.itemValue}>1.0.0</span>
-            </div>
-
-            <div className={styles.item}>
-              <span className={styles.itemIcon}>📄</span>
-              <div className={styles.itemContent}>
-                <span className={styles.itemLabel}>Termos de uso</span>
-                <span className={styles.itemDesc}>Política de privacidade e termos</span>
-              </div>
-              <span className={styles.itemArrow}>›</span>
             </div>
           </div>
         </div>

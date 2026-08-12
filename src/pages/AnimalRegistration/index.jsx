@@ -47,7 +47,6 @@ function CadastroAnimal() {
   const [sucesso, setSucesso] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [submitErro, setSubmitErro] = useState(null)
-  const [activeTab, setActiveTab] = useState('animais')
   const [busca, setBusca] = useState('')
 
   function handleChange(e) {
@@ -394,7 +393,7 @@ function CadastroAnimal() {
       </main>
 
       {/* ── Bottom Nav ── */}
-      <PropertyNav activeTab={activeTab} />
+      <PropertyNav />
 
     </div>
   )

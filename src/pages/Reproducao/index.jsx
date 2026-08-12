@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAnimais } from '../../hooks/useAnimais'
 import { useGestantes } from '../../hooks/useGestantes'
@@ -16,8 +15,6 @@ function Reproducao() {
   const { propriedadeId } = useParams()
   const { animais } = useAnimais(propriedadeId)
   const { gestantes, coberturas, falhas, paridas, carregando: carregandoGestantes } = useGestantes(propriedadeId)
-  const [activeTab, setActiveTab] = useState('reproducao')
-
   const femeas = animais.filter(a => a.sexo === 'femea')
   const animalPorUuid = new Map(animais.map(a => [a.uuid, a]))
 
@@ -117,7 +114,7 @@ function Reproducao() {
         )}
       </div>
 
-      <PropertyNav activeTab={activeTab} />
+      <PropertyNav />
     </div>
   )
 }
