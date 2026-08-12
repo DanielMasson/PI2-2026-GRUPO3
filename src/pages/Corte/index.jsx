@@ -9,23 +9,6 @@ function formatarData(data) {
   return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR')
 }
 
-function PropertyNavWithRoute({ activeTab, setActiveTab, navigate, propriedadeId }) {
-  return (
-    <PropertyNav
-      activeTab={activeTab}
-      onNav={(tab) => {
-        setActiveTab(tab)
-        if (tab === 'home') navigate(`/propriedade/${propriedadeId}`)
-        else if (tab === 'animais') navigate(`/propriedade/${propriedadeId}/animais`)
-        else if (tab === 'saude') navigate(`/propriedade/${propriedadeId}/saude`)
-        else if (tab === 'reproducao') navigate(`/propriedade/${propriedadeId}/reproducao`)
-        else if (tab === 'leite') navigate(`/propriedade/${propriedadeId}/producao-leite`)
-        else if (tab === 'corte') navigate(`/propriedade/${propriedadeId}/corte`)
-      }}
-    />
-  )
-}
-
 // GMD em kg/dia a partir de pesagens ordenadas por data asc.
 function calcularGmdLocal(pesagens) {
   if (!pesagens || pesagens.length < 2) return null
@@ -175,7 +158,7 @@ function Corte() {
         <div className={styles.inner}>
           <p style={{ color: '#999', textAlign: 'center', padding: '2rem' }}>Carregando...</p>
         </div>
-        <PropertyNavWithRoute activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} propriedadeId={propriedadeId} />
+        <PropertyNav activeTab={activeTab} />
       </div>
     )
   }
@@ -194,7 +177,7 @@ function Corte() {
             Nenhum animal de corte cadastrado. Cadastre machos bovinos, ovinos ou caprinos para acompanhar o desempenho.
           </p>
         </div>
-        <PropertyNavWithRoute activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} propriedadeId={propriedadeId} />
+        <PropertyNav activeTab={activeTab} />
       </div>
     )
   }
@@ -370,7 +353,7 @@ function Corte() {
           {salvando ? 'Salvando...' : 'Salvar pesagens'}
         </button>
       </div>
-      <PropertyNavWithRoute activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} propriedadeId={propriedadeId} />
+      <PropertyNav activeTab={activeTab} />
     </div>
   )
 }

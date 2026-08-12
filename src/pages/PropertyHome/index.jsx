@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import styles from './PropertyHome.module.css'
 import PropertyNav from '../../components/PropertyNav/index.jsx'
@@ -67,7 +67,6 @@ function ImgSlot({ label = '+ adicionar imagem' }) {
 function PropertyHome() {
   const navigate = useNavigate()
   const { propriedadeId } = useParams()
-  const [activeTab, setActiveTab] = useState('inicio')
 
   // ── Context & hooks ──
   const { propriedade, selecionarPropriedade, carregando: carregandoPropriedade } = usePropriedade()
@@ -130,22 +129,6 @@ function PropertyHome() {
     despesa: null,
     saldo: null,
     percentualMeta: 0,
-  }
-
-  function handleNav(key) {
-    if (key === 'animais') {
-      navigate(`/propriedade/${propriedadeId}/animais`)
-    } else if (key === 'reproducao') {
-      navigate(`/propriedade/${propriedadeId}/reproducao`)
-    } else if (key === 'leite') {
-      navigate(`/propriedade/${propriedadeId}/producao-leite`)
-    } else if (key === 'corte') {
-      navigate(`/propriedade/${propriedadeId}/corte`)
-    } else if (key === 'financeiro') {
-      navigate(`/propriedade/${propriedadeId}/financeiro`)
-    } else {
-      setActiveTab(key)
-    }
   }
 
   return (
@@ -356,7 +339,7 @@ function PropertyHome() {
       </main>
 
       {/* ── Bottom Nav ── */}
-      <PropertyNav activeTab={activeTab} onNav={handleNav} />
+      <PropertyNav />
 
     </div>
   )

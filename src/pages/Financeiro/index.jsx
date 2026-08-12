@@ -11,23 +11,6 @@ function formatarMoeda(v) {
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-function PropertyNavWithRoute({ activeTab, setActiveTab, navigate, propriedadeId }) {
-  return (
-    <PropertyNav
-      activeTab={activeTab}
-      onNav={(tab) => {
-        setActiveTab(tab)
-        if (tab === 'inicio') navigate(`/propriedade/${propriedadeId}`)
-        else if (tab === 'animais') navigate(`/propriedade/${propriedadeId}/animais`)
-        else if (tab === 'reproducao') navigate(`/propriedade/${propriedadeId}/reproducao`)
-        else if (tab === 'leite') navigate(`/propriedade/${propriedadeId}/producao-leite`)
-        else if (tab === 'corte') navigate(`/propriedade/${propriedadeId}/corte`)
-        else if (tab === 'financeiro') navigate(`/propriedade/${propriedadeId}/financeiro`)
-      }}
-    />
-  )
-}
-
 const TABS = [
   { key: 'dashboard', label: 'Dashboard', path: '' },
   { key: 'listar', label: 'Listar', path: 'listar' },
@@ -363,12 +346,7 @@ export default function Financeiro() {
         )}
       </main>
 
-      <PropertyNavWithRoute
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        navigate={navigate}
-        propriedadeId={propriedadeId}
-      />
+      <PropertyNav activeTab={activeTab} />
     </div>
   )
 }

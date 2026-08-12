@@ -105,22 +105,6 @@ function CadastroAnimal() {
     setSubmitErro(null)
   }
 
-  function handleNav(key) {
-    if (key === 'inicio') {
-      navigate(`/propriedade/${propriedadeId}`)
-    } else if (key === 'animais') {
-      navigate(`/propriedade/${propriedadeId}/animais`)
-    } else if (key === 'reproducao') {
-      navigate(`/propriedade/${propriedadeId}/reproducao`)
-    } else if (key === 'leite') {
-      navigate(`/propriedade/${propriedadeId}/producao-leite`)
-    } else if (key === 'corte') {
-      navigate(`/propriedade/${propriedadeId}/corte`)
-    } else {
-      setActiveTab(key)
-    }
-  }
-
   return (
     <div className={styles.screen}>
 
@@ -410,7 +394,7 @@ function CadastroAnimal() {
       </main>
 
       {/* ── Bottom Nav ── */}
-      <PropertyNav activeTab={activeTab} onNav={handleNav} />
+      <PropertyNav activeTab={activeTab} />
 
     </div>
   )

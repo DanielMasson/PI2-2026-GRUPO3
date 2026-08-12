@@ -25,7 +25,6 @@ function ListaAnimais() {
   const { animais, carregando, erro, buscar, filtros, setFiltros, recarregar } = useAnimais(propriedadeId)
 
   const [busca, setBusca] = useState('')
-  const [activeTab, setActiveTab] = useState('animais')
 
   const buscaDebounced = useDebounce(busca, 300)
 
@@ -44,20 +43,6 @@ function ListaAnimais() {
       setFiltros(f => ({ ...f, especie: null }))
     } else {
       setFiltros(f => ({ ...f, especie: key }))
-    }
-  }
-
-  function handleNav(key) {
-    if (key === 'inicio') {
-      navigate(`/propriedade/${propriedadeId}`)
-    } else if (key === 'reproducao') {
-      navigate(`/propriedade/${propriedadeId}/reproducao`)
-    } else if (key === 'leite') {
-      navigate(`/propriedade/${propriedadeId}/producao-leite`)
-    } else if (key === 'corte') {
-      navigate(`/propriedade/${propriedadeId}/corte`)
-    } else {
-      setActiveTab(key)
     }
   }
 
@@ -183,7 +168,7 @@ function ListaAnimais() {
       </main>
 
       {/* ── Bottom Nav ── */}
-      <PropertyNav activeTab={activeTab} onNav={handleNav} />
+      <PropertyNav />
 
     </div>
   )

@@ -117,18 +117,7 @@ function Reproducao() {
         )}
       </div>
 
-      <PropertyNav
-        activeTab={activeTab}
-        onNav={(tab) => {
-          setActiveTab(tab)
-          if (tab === 'home') navigate(`/propriedade/${propriedadeId}`)
-          else if (tab === 'animais') navigate(`/propriedade/${propriedadeId}/animais`)
-          else if (tab === 'saude') navigate(`/propriedade/${propriedadeId}/saude`)
-          else if (tab === 'reproducao') navigate(`/propriedade/${propriedadeId}/reproducao`)
-          else if (tab === 'leite') navigate(`/propriedade/${propriedadeId}/producao-leite`)
-          else if (tab === 'corte') navigate(`/propriedade/${propriedadeId}/corte`)
-        }}
-      />
+      <PropertyNav activeTab={activeTab} />
     </div>
   )
 }
